@@ -1,6 +1,11 @@
-#pragma once
+#ifndef stm_utilities_h
+#define stm_utilities_h
 
-namespace stml
+#include "vector.h"
+#include "matrix.h"
+#include "dynamic_matrix.h"
+
+namespace stm
 {
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
 	void Print(const matrix<_TYPE, _ROWS, _COLUMNS>& mat)
@@ -17,6 +22,21 @@ namespace stml
 		}
 	}
 
+	template<typename _TYPE>
+	void Print(const dynamic_matrix<_TYPE>& mat)
+	{
+		std::cout << "[ ";
+		for (unsigned int i = 0; i < mat.GetRows(); ++i)
+		{
+			for (unsigned int j = 0; j < mat.GetColumns(); ++j)
+				std::cout << mat[i][j] << (((i != mat.GetRows() - 1) || (j != mat.GetColumns() - 1)) ? " , " : " ");
+			if (i != mat.GetRows() - 1)
+				std::cout << std::endl << "  ";
+			else
+				std::cout << "]" << std::endl;
+		}
+	}
+
 	template<typename _TYPE, unsigned int _DIM>
 	void Print(const vector<_TYPE, _DIM>& vec)
 	{
@@ -26,3 +46,4 @@ namespace stml
 		std::cout << "]" << std::endl;
 	}
 }
+#endif /*stm_utilities_h*/

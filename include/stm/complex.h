@@ -1,9 +1,11 @@
-#pragma once
+#ifndef stm_complex_h
+#define stm_complex_h
+
 #include <iostream>
 #include <math.h>
 #include <cmath>
 
-namespace stml
+namespace stm
 {
 	template<typename _TYPE>
 	class complex
@@ -97,3 +99,4 @@ namespace stml
 		}
 	};
 }
+#endif /* stm_complex_h */

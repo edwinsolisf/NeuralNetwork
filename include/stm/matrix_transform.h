@@ -1,7 +1,10 @@
-#pragma once
+#ifndef stm_matrix_transform_h
+#define stm_matrix_transform_h
+
+#include "vector.h"
 #include "matrix.h"
 
-namespace stml
+namespace stm
 {
 
 	const vec3f posX = { 1.0f, 0.0f, 0.0f };
@@ -30,3 +33,4 @@ namespace stml
 
     float angle(const vec3f& vec1, const vec3f& vec2);
 }
+#endif /* stm_matrix_transform_h */

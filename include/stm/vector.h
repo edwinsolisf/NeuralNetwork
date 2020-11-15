@@ -1,13 +1,10 @@
-#pragma once
+#ifndef stm_vector_h
+#define stm_vector_h
+
 #include <iostream>
+#include "debug.h"
 
-#ifdef DEBUG
-#define assert(x) if(!(x)) { __debugbreak(); }
-#else
-#define assert(x) 
-#endif
-
-namespace stml
+namespace stm
 {
 	template<typename _TYPE, unsigned int _DIM>
 	class vector
@@ -53,8 +50,8 @@ namespace stml
 			return vector(data);
 		}
 
-        inline _TYPE& operator[](const unsigned int& index) { assert(index < _DIM); return _data[index]; }
-        inline const _TYPE& operator[](const unsigned int& index) const { assert(index < _DIM); return _data[index]; }
+        inline _TYPE& operator[](const unsigned int& index) { stm_assert(index < _DIM); return _data[index]; }
+        inline const _TYPE& operator[](const unsigned int& index) const { stm_assert(index < _DIM); return _data[index]; }
 
 		//Casting
 		template<unsigned int DIM>
@@ -275,8 +272,8 @@ namespace stml
 			return vector(-x, -y, -z, -w);
 		}
 
-        inline _TYPE& operator[](const unsigned int& index) { assert(index < 4); return _data[index]; }
-        inline const _TYPE& operator[](const unsigned int& index) const { assert(index < 4); return _data[index]; }
+        inline _TYPE& operator[](const unsigned int& index) { stm_assert(index < 4); return _data[index]; }
+        inline const _TYPE& operator[](const unsigned int& index) const { stm_assert(index < 4); return _data[index]; }
 
 		//Casting
 		template<unsigned int DIM>
@@ -469,8 +466,8 @@ namespace stml
 			return vector(-x, -y, -z);
 		}
 
-        inline _TYPE& operator[](const unsigned int& index) { assert(index < 3); return _data[index]; }
-        inline const _TYPE& operator[](const unsigned int& index) const { assert(index < 3); return _data[index]; }
+        inline _TYPE& operator[](const unsigned int& index) { stm_assert(index < 3); return _data[index]; }
+        inline const _TYPE& operator[](const unsigned int& index) const { stm_assert(index < 3); return _data[index]; }
 
 		//Casting
 		template<unsigned int DIM>
@@ -669,8 +666,8 @@ namespace stml
 			return vector(-x, -y);
 		}
 
-        inline _TYPE& operator[](const unsigned int& index) { assert(index < 2); return _data[index]; }
-        inline const _TYPE& operator[](const unsigned int& index) const { assert(index < 2); return _data[index]; }
+        inline _TYPE& operator[](const unsigned int& index) { stm_assert(index < 2); return _data[index]; }
+        inline const _TYPE& operator[](const unsigned int& index) const { stm_assert(index < 2); return _data[index]; }
 
 		template<typename O_TYPE>
 		vector<O_TYPE, 2> Cast() const
@@ -842,3 +839,4 @@ namespace stml
 	typedef vector<int, 4> vec4i;
 	typedef vector<float, 4> vec4f;
 }
+#endif /* stm_vector_h */

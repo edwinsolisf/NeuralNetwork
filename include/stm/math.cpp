@@ -1,6 +1,6 @@
 #include "math.h"
 
-namespace stml
+namespace stm
 {
 
 }

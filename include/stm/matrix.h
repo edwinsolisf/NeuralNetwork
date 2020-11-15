@@ -1,4 +1,6 @@
-#pragma once
+#ifndef stm_matrix_h
+#define stm_matrix_h
+
 #include <iostream>
 #include "vector.h"
 
@@ -35,8 +37,8 @@ namespace stm
 		}
 
 		//Unary Operators
-        inline _TYPE* operator[](const unsigned int& index) { assert(index < _ROWS); return &_data[index * _COLUMNS]; }
-        inline const _TYPE* operator[](const unsigned int& index) const { assert(index < _ROWS); return &_data[index * _COLUMNS]; }
+        inline _TYPE* operator[](const unsigned int& index) { stm_assert(index < _ROWS); return &_data[index * _COLUMNS]; }
+        inline const _TYPE* operator[](const unsigned int& index) const { stm_assert(index < _ROWS); return &_data[index * _COLUMNS]; }
 
 		inline matrix operator+() const
 		{
@@ -363,8 +365,8 @@ namespace stm
 		}
 
 		//Unary Operators
-        inline _TYPE* operator[](const unsigned int& index) { assert(index < 2); return &_data[index * 2]; }
-        inline const _TYPE* operator[](const unsigned int& index) const { assert(index < 2); return &_data[index * 2]; }
+        inline _TYPE* operator[](const unsigned int& index) { stm_assert(index < 2); return &_data[index * 2]; }
+        inline const _TYPE* operator[](const unsigned int& index) const { stm_assert(index < 2); return &_data[index * 2]; }
 
 		inline matrix operator+() const
 		{
@@ -734,3 +736,4 @@ namespace stm
 	const mat4f identity_mat4f = GetIndentityMatrix<float, 4, 4>();
 
 }
+#endif /* stm_matrix_h */

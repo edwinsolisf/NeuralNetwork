@@ -2,7 +2,7 @@
 #include "constants.h"
 #include "quaternion.h"
 
-namespace stml
+namespace stm
 {
 	mat4f scale(const vec3f& scaleFactor)
 	{
@@ -155,26 +155,21 @@ namespace stml
         return multiply(space, translate(-position));
     }
 
-mat4f lookAt(const vec3f& position, const vec3f& up, const vec3f& right, const vec3f& direction)
-{
-    mat4f space = identity_mat4f;
+	mat4f lookAt(const vec3f& position, const vec3f& up, const vec3f& right, const vec3f& direction)
+	{
+		mat4f space = identity_mat4f;
     
-    space[0][0] = right.x;
-    space[0][1] = right.y;
-    space[0][2] = right.z;
-    space[1][0] = up.x;
-    space[1][1] = up.y;
-    space[1][2] = up.z;
-    space[2][0] = direction.x;
-    space[2][1] = direction.y;
-    space[2][2] = direction.z;
+		space[0][0] = right.x;
+		space[0][1] = right.y;
+		space[0][2] = right.z;
+		space[1][0] = up.x;
+		space[1][1] = up.y;
+		space[1][2] = up.z;
+		space[2][0] = direction.x;
+		space[2][1] = direction.y;
+		space[2][2] = direction.z;
     
-    return multiply(space, translate(-position));
-}
-
-    float angle(const vec3f& vec1, const vec3f& vec2)
-    {
-        return acos(dotproduct(vec1, vec2) / (vec1.Magnitude() * vec2.Magnitude()));
-    }
+		return multiply(space, translate(-position));
+	}
 
 }

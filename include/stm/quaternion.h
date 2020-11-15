@@ -1,9 +1,11 @@
-#pragma once
-#include <iostream>
-#include "vector.h"
-#include <math.h>
+#ifndef stm_quaternion_h
+#define stm_quaternion_h
 
-namespace stml
+#include <iostream>
+#include <math.h>
+#include "vector.h"
+
+namespace stm
 {
 	template<typename _TYPE>
 	class quaternion
@@ -134,3 +136,4 @@ namespace stml
     typedef quaternion<float> quatf;
     typedef quaternion<int>   quati;
 }
+#endif
