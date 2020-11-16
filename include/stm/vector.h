@@ -6,6 +6,9 @@
 
 namespace stm
 {
+	template<typename _TYPE>
+	class dynamic_vector;
+
 	template<typename _TYPE, unsigned int _DIM>
 	class vector
 	{
@@ -34,6 +37,13 @@ namespace stm
 		vector(const vector& other)
 		{
 			memcpy(_data, other._data, _DIM * sizeof(_TYPE));
+		}
+
+		vector& operator=(const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(_DIM == vec.GetSize());
+			memcpy(_data, vec.GetData(), _DIM * sizeof(_TYPE));
+			return *this;
 		}
 
 		//Unary Operators
@@ -144,6 +154,42 @@ namespace stm
 			return vector(temp);
 		}
 
+		vector operator+(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(_DIM == vec.GetSize());
+			_TYPE temp[_DIM];
+			for (unsigned int i = 0; i < _DIM; ++i)
+				temp[i] = _data[i] + vec[i];
+			return vector(temp);
+		}
+
+		vector operator-(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(_DIM == vec.GetSize());
+			_TYPE temp[_DIM];
+			for (unsigned int i = 0; i < _DIM; ++i)
+				temp[i] = _data[i] - vec[i];
+			return vector(temp);
+		}
+
+		vector operator*(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(_DIM == vec.GetSize());
+			_TYPE temp[_DIM];
+			for (unsigned int i = 0; i < _DIM; ++i)
+				temp[i] = _data[i] * vec[i];
+			return vector(temp);
+		}
+
+		vector operator/(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(_DIM == vec.GetSize());
+			_TYPE temp[_DIM];
+			for (unsigned int i = 0; i < _DIM; ++i)
+				temp[i] = _data[i] / vec[i];
+			return vector(temp);
+		}
+
 		//Binary assigment operators
 		vector& operator+=(const vector& other)
 		{
@@ -193,6 +239,30 @@ namespace stm
 			return *this;
 		}
 
+		vector& operator+=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this + vec;
+			return *this;
+		}
+
+		vector& operator-=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this - vec;
+			return *this;
+		}
+
+		vector& operator*=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this * vec;
+			return *this;
+		}
+
+		vector& operator/=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this / vec;
+			return *this;
+		}
+
 		//Data Info Functions
 		inline _TYPE* GetData() { return _data; }
 		inline const _TYPE* GetData() const { return _data; }
@@ -217,6 +287,14 @@ namespace stm
 			return sum;
 		}
 
+		_TYPE DotProduct(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(vec.GetSize() == _DIM)
+			_TYPE sum = 0;
+			for (unsigned int i = 0; i < _DIM; ++i)
+				sum += _data[i] * vec[i];
+			return sum;
+		}
 	};
 
 	template<typename _TYPE>
@@ -259,6 +337,14 @@ namespace stm
 		vector(const vector& other)
 		{
 			memcpy(_data, other._data, 4 * sizeof(_TYPE));
+		}
+
+		//Assigment Operator
+		vector& operator=(const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(4 == vec.GetSize());
+			memcpy(_data, vec.GetData(), 4 * sizeof(_TYPE));
+			return *this;
 		}
 
 		//Unary Operators
@@ -341,6 +427,30 @@ namespace stm
 			return vector(x / other, y / other, z / other, w / other);
 		}
 
+		inline vector operator+(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(4 == vec.GetSize());
+			return vector(x + vec[0], y + vec[1], z + vec[2], w + vec[3]);
+		}
+
+		inline vector operator-(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(4 == vec.GetSize());
+			return vector(x - vec[0], y - vec[1], z - vec[2], w - vec[3]);
+		}
+
+		inline vector operator*(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(4 == vec.GetSize());
+			return vector(x * vec[0], y * vec[1], z * vec[2], w * vec[3]);
+		}
+
+		inline vector operator/(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(4 == vec.GetSize());
+			return vector(x / vec[0], y / vec[1], z / vec[2], w / vec[3]);
+		}
+
 		//Binary assigment operators
 		vector& operator+=(const vector& other)
 		{
@@ -390,6 +500,30 @@ namespace stm
 			return *this;
 		}
 
+		vector& operator+=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this + vec;
+			return *this;
+		}
+
+		vector& operator-=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this - vec;
+			return *this;
+		}
+
+		vector& operator*=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this * vec;
+			return *this;
+		}
+
+		vector& operator/=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this / vec;
+			return *this;
+		}
+
 		//Data Info Functions
 		inline _TYPE* GetData() { return _data; }
 		inline const _TYPE* GetData() const { return _data; }
@@ -409,6 +543,12 @@ namespace stm
 		inline _TYPE DotProduct(const vector& other) const
 		{
 			return (x * other.x) + (y * other.y) + (z * other.z) + (w * other.w);
+		}
+
+		inline _TYPE DotProduct(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(vec.GetSize() == 4);
+			return (x * vec[0]) + (y * vec[1]) + (z * vec[2]) + (w * vec[3]);
 		}
 	};
 
@@ -453,6 +593,14 @@ namespace stm
 		vector(const vector& other)
 		{
 			memcpy(_data, other._data, 3 * sizeof(_TYPE));
+		}
+
+		//Assigment Operator
+		vector& operator=(const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(3 == vec.GetSize());
+			memcpy(_data, vec.GetData(), 3 * sizeof(_TYPE));
+			return *this;
 		}
 
 		//Unary Operators
@@ -535,6 +683,30 @@ namespace stm
 			return vector(x / other, y / other, z / other);
 		}
 
+		inline vector operator+(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(3 == vec.GetSize());
+			return vector(x + vec[0], y + vec[1], z + vec[2]);
+		}
+
+		inline vector operator-(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(3 == vec.GetSize());
+			return vector(x - vec[0], y - vec[1], z - vec[2]);
+		}
+
+		inline vector operator*(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(3 == vec.GetSize());
+			return vector(x * vec[0], y * vec[1], z * vec[2]);
+		}
+
+		inline vector operator/(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(3 == vec.GetSize());
+			return vector(x / vec[0], y / vec[1], z / vec[2]);
+		}
+
 		//Binary assigment operators
 		vector& operator+=(const vector& other)
 		{
@@ -584,6 +756,31 @@ namespace stm
 			return *this;
 		}
 
+
+		vector& operator+=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this + vec;
+			return *this;
+		}
+
+		vector& operator-=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this - vec;
+			return *this;
+		}
+
+		vector& operator*=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this * vec;
+			return *this;
+		}
+
+		vector& operator/=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this / vec;
+			return *this;
+		}
+
 		//Data Info Functions
 		inline _TYPE* GetData() { return _data; }
 		inline const _TYPE* GetData() const { return _data; }
@@ -610,6 +807,20 @@ namespace stm
 			return vector((y * other.z) - (z * other.y),
 						  (z * other.x) - (x * other.z),
 						  (x * other.y) - (y * other.x));
+		}
+
+		inline _TYPE DotProduct(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(vec.GetSize() == 3);
+			return (x * vec[0]) + (y * vec[1]) + (z * vec[2]);
+		}
+
+		inline vector CrossProduct(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(vec.GetSize() == 3);
+			return vector((y * vec[2]) - (z * vec[1]),
+						  (z * vec[0]) - (x * vec[2]),
+						  (x * vec[1]) - (y * vec[0]));
 		}
 	};
 
@@ -653,6 +864,14 @@ namespace stm
 		vector(const vector& other)
 		{
 			memcpy(_data, other._data, 2 * sizeof(_TYPE));
+		}
+
+		//Assigment Operator
+		vector& operator=(const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(2 == vec.GetSize());
+			memcpy(_data, vec.GetData(), 2 * sizeof(_TYPE));
+			return *this;
 		}
 
 		//Unary Operators
@@ -727,6 +946,30 @@ namespace stm
 			return vector(x / other, y / other);
 		}
 
+		inline vector operator+(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(2 == vec.GetSize());
+			return vector(x + vec[0], y + vec[1]);
+		}
+
+		inline vector operator-(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(2 == vec.GetSize());
+			return vector(x - vec[0], y - vec[1]);
+		}
+
+		inline vector operator*(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(2 == vec.GetSize());
+			return vector(x * vec[0], y * vec[1]);
+		}
+
+		inline vector operator/(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(2 == vec.GetSize());
+			return vector(x / vec[0], y / vec[1]);
+		}
+
 		//Binary assigment operators
 		vector& operator+=(const vector& other)
 		{
@@ -776,6 +1019,30 @@ namespace stm
 			return *this;
 		}
 
+		vector& operator+=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this + vec;
+			return *this;
+		}
+
+		vector& operator-=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this - vec;
+			return *this;
+		}
+
+		vector& operator*=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this * vec;
+			return *this;
+		}
+
+		vector& operator/=(const dynamic_vector<_TYPE>& vec)
+		{
+			*this = *this / vec;
+			return *this;
+		}
+
 		//Data Info Functions
 		inline _TYPE* GetData() { return _data; }
 		inline const _TYPE* GetData() const { return _data; }
@@ -800,6 +1067,18 @@ namespace stm
 		inline vector<_TYPE, 3> CrossProduct(const vector& other) const
 		{
 			return vector(0, 0, (x * other.y) - (y * other.x));
+		}
+
+		inline _TYPE DotProduct(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(vec.GetSize() == 2);
+			return (x * vec[0]) + (y * vec[1]);
+		}
+
+		inline vector<_TYPE, 3> CrossProduct(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(vec.GetSize() == 2);
+			return vector(0, 0, (x * vec[1]) - (y * vec[0]));
 		}
 	};
 

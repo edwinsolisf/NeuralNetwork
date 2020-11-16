@@ -164,6 +164,7 @@
     <ClInclude Include="include\stm\constants.h" />
     <ClInclude Include="include\stm\debug.h" />
     <ClInclude Include="include\stm\dynamic_matrix.h" />
+    <ClInclude Include="include\stm\dynamic_vector.h" />
     <ClInclude Include="include\stm\math.h" />
     <ClInclude Include="include\stm\matrix.h" />
     <ClInclude Include="include\stm\matrix_transform.h" />

@@ -3,9 +3,13 @@
 
 #include <iostream>
 #include "vector.h"
+#include "dynamic_vector.h"
 
 namespace stm
 {
+	template<typename _TYPE>
+	class dynamic_matrix;
+
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
 	class matrix
 	{
@@ -34,6 +38,14 @@ namespace stm
 		matrix(const matrix& other)
 		{
 			memcpy(_data, other._data, GetSize() * sizeof(_TYPE));
+		}
+
+		//Assigment Operators
+		matrix& operator=(const dynamic_matrix<_TYPE>& mat)
+		{
+			stm_assert(mat.GetRowSize() == _ROWS && mat.GetColumnSize() == _COLUMNS);
+			memcpy(_data, mat.GetData(), GetSize() * sizeof(_TYPE));
+			return *this;
 		}
 
 		//Unary Operators
@@ -118,6 +130,42 @@ namespace stm
 			return matrix(temp);
 		}
 
+		matrix operator+(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetRowSize() == _ROWS && mat.GetColumnSize() == _COLUMNS);
+			_TYPE temp[_ROWS * _COLUMNS];
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				temp[i] = _data[i] + mat.GetData()[i];
+			return matrix(temp);
+		}
+
+		matrix operator-(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetRowSize() == _ROWS && mat.GetColumnSize() == _COLUMNS);
+			_TYPE temp[_ROWS * _COLUMNS];
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				temp[i] = _data[i] - mat.GetData()[i];
+			return matrix(temp);
+		}
+
+		matrix operator*(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetRowSize() == _ROWS && mat.GetColumnSize() == _COLUMNS);
+			_TYPE temp[_ROWS * _COLUMNS];
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				temp[i] = _data[i] * mat.GetData()[i];
+			return matrix(temp);
+		}
+
+		matrix operator/(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetRowSize() == _ROWS && mat.GetColumnSize() == _COLUMNS);
+			_TYPE temp[_ROWS * _COLUMNS];
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				temp[i] = _data[i] / mat.GetData()[i];
+			return matrix(temp);
+		}
+
 		//Binary-Assigment Operators
 		matrix& operator+=(const matrix& other)
 		{
@@ -167,8 +215,32 @@ namespace stm
 			return *this;
 		}
 
+		matrix& operator+=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this + mat;
+			return *this;
+		}
+
+		matrix& operator-=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this - mat;
+			return *this;
+		}
+
+		matrix& operator*=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this * mat;
+			return *this;
+		}
+
+		matrix& operator/=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this / mat;
+			return *this;
+		}
+
 		//Math functions
-		matrix<_TYPE, _ROWS - 1, _COLUMNS - 1> Minor(const unsigned int& row, const unsigned int& column) const
+		matrix<_TYPE, _ROWS - 1, _COLUMNS - 1> Minor(unsigned int row, unsigned int column) const
 		{
 			_TYPE temp[(_ROWS - 1) * (_COLUMNS - 1)];
 			unsigned int k = 0;
@@ -222,19 +294,12 @@ namespace stm
 		}
 
 		template<unsigned int rows, unsigned columns>
-		matrix<_TYPE, rows, columns> SubMatrix(const unsigned int rowOffset, const unsigned int& columnOffset) const
+		matrix<_TYPE, rows, columns> SubMatrix(unsigned int rowOffset, unsigned int columnOffset) const
 		{
 			_TYPE temp[rows * columns];
 			for (unsigned int i = rowOffset; i < rowOffset + rows; ++i)
 				memcpy(temp[i - rowOffset], _data[(i * _COLUMNS) + columnOffset], columns * sizeof(_TYPE));
 			return matrix<_TYPE, rows, columns>(temp);
-		}
-
-
-		template<unsigned int rows>
-		matrix<_TYPE, rows, _COLUMNS> Multiplication(const matrix<_TYPE, rows, _ROWS>& other) const
-		{
-			return matrix<_TYPE, rows, _COLUMNS>(other);
 		}
 
 		_TYPE Determinant() const
@@ -244,12 +309,29 @@ namespace stm
 			_TYPE sum = 0;
 			for (unsigned int i = 0; i < _ROWS; ++i)
 			{
-				sum += (i % 2) ? -(this->Minor(0, i).Determinant() * _data[i]) : (Minor(0, i).Determinant() * _data[i]);
+				sum += (i % 2) ? -(Minor(0, i).Determinant() * _data[i]) : (Minor(0, i).Determinant() * _data[i]);
 			}
 			return sum;
 		}
         
-        vector<_TYPE, _ROWS> Multiply(const vector<_TYPE, _COLUMNS>& vec)
+		template<unsigned int O_COLUMNS>
+		matrix<_TYPE, _ROWS, O_COLUMNS> Multiply(const matrix<_TYPE, _COLUMNS, O_COLUMNS>& mat) const
+		{
+			_TYPE data[_ROWS * O_COLUMNS];
+			for (unsigned int i = 0; i < _ROWS; ++i)
+			{
+				for (unsigned int j = 0; j < O_COLUMNS; ++j)
+				{
+					_TYPE sum = 0;
+					for (unsigned int k = 0; k < _COLUMNS; ++k)
+						sum += (*this)[i][k] * mat[k][j];
+					data[(i * O_COLUMNS) + j] = sum;
+				}
+			}
+			return matrix<_TYPE, _ROWS, O_COLUMNS>(data);
+		}
+
+        vector<_TYPE, _ROWS> Multiply(const vector<_TYPE, _COLUMNS>& vec) const
         {
             _TYPE dim[_ROWS];
             memset(dim, 0, _ROWS * sizeof(_TYPE));
@@ -261,9 +343,22 @@ namespace stm
             return vector<_TYPE, _ROWS>(dim);
         }
         
+		vector<_TYPE, _ROWS> Multiply(const dynamic_vector<_TYPE>& vec) const
+		{
+			stm_assert(_COLUMNS == vec.GetSize());
+			_TYPE dim[_ROWS];
+			memset(dim, 0, _ROWS * sizeof(_TYPE));
+			for (unsigned int i = 0; i < _ROWS; ++i)
+			{
+				for (unsigned int j = 0; j < _COLUMNS; ++j)
+					dim[i] += vec[j] * (*this)[i][j];
+			}
+			return vector<_TYPE, _ROWS>(dim);
+		}
+
 		//Vector Getters and Setters
-		vector<_TYPE, _COLUMNS> GetRowVector(const unsigned int& row) const { return vector<_TYPE, _COLUMNS>(&_data[row * _COLUMNS]); }
-		vector<_TYPE, _ROWS> GetColumnVector(const unsigned int& column) const
+		vector<_TYPE, _COLUMNS> GetRowVector(unsigned int row) const { return vector<_TYPE, _COLUMNS>(&_data[row * _COLUMNS]); }
+		vector<_TYPE, _ROWS> GetColumnVector(unsigned int column) const
 		{
 			_TYPE temp[_ROWS];
 			for (unsigned int i = 0; i < _ROWS; ++i)
@@ -271,19 +366,33 @@ namespace stm
 			return vector<_TYPE, _ROWS>(temp);
 		}
 
-		matrix& SetRowVector(const unsigned int& row, const vector<_TYPE, _COLUMNS>& vec)
+		matrix& SetRowVector(unsigned int row, const vector<_TYPE, _COLUMNS>& vec)
 		{
 			memcpy(&_data[row * _COLUMNS], vec.GetData(), _COLUMNS * sizeof(_TYPE));
 			return *this;
 		}
 
-		matrix& SetColumnVector(const unsigned int& column, const vector<_TYPE, _ROWS>& vec)
+		matrix& SetRowVector(unsigned int row, const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(_COLUMNS == vec.GetSize());
+			memcpy(&_data[row * _COLUMNS], vec.GetData(), _COLUMNS * sizeof(_TYPE));
+			return *this;
+		}
+
+		matrix& SetColumnVector(unsigned int column, const vector<_TYPE, _ROWS>& vec)
 		{
 			for (unsigned int i = 0; i < _ROWS; ++i)
 				(*this)[i][column] = vec[i];
 			return *this;
 		}
 
+		matrix& SetColumnVector(unsigned int column, const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(_ROWS == vec.GetSize());
+			for (unsigned int i = 0; i < _ROWS; ++i)
+				(*this)[i][column] = vec[i];
+			return *this;
+		}
 
 		//Data manipulation functions
 		matrix& ApplyToMatrix(_TYPE(*func)(const _TYPE&))
@@ -293,14 +402,14 @@ namespace stm
 			return *this;
 		}
 
-		matrix& ApplyToRow(const unsigned int& row, _TYPE(*func)(const _TYPE&))
+		matrix& ApplyToRow(unsigned int row, _TYPE(*func)(const _TYPE&))
 		{
 			for (unsigned int i = 0; i < _COLUMNS; ++i)
 				_data[(row * _COLUMNS) + i] = func(_data[(row * _COLUMNS) + i]);
 			return *this;
 		}
 
-		matrix& ApplyToColumn(const unsigned int& column, _TYPE(*func)(const _TYPE&))
+		matrix& ApplyToColumn(unsigned int column, _TYPE(*func)(const _TYPE&))
 		{
 			for (unsigned int i = 0; i < _ROWS; ++i)
 				(*this)[i][column] = func((*this)[i][column]);
@@ -364,6 +473,14 @@ namespace stm
 			memcpy(_data, other._data, GetSize() * sizeof(_TYPE));
 		}
 
+		//Assigment Operator
+		matrix& operator=(const dynamic_matrix<_TYPE>& mat)
+		{
+			stm_assert(mat.GetColumnSize() == 2 && mat.GetRowSize() == 2);
+			memcpy(_data, mat.GetData(), 4 * sizeof(_TYPE));
+			return *this;
+		}
+
 		//Unary Operators
         inline _TYPE* operator[](const unsigned int& index) { stm_assert(index < 2); return &_data[index * 2]; }
         inline const _TYPE* operator[](const unsigned int& index) const { stm_assert(index < 2); return &_data[index * 2]; }
@@ -419,6 +536,30 @@ namespace stm
 			return matrix(_data[0] / other, _data[1] / other, _data[2] / other, _data[3] / other);
 		}
 
+		inline matrix operator+(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetColumnSize() == 2 && mat.GetRowSize() == 2);
+			return matrix(_data[0] + mat.GetData[0], _data[1] + mat.GetData()[1], _data[2] + mat.GetData()[2], _data[3] + mat.GetData()[3]);
+		}
+
+		inline matrix operator-(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetColumnSize() == 2 && mat.GetRowSize() == 2);
+			return matrix(_data[0] - mat.GetData[0], _data[1] - mat.GetData()[1], _data[2] - mat.GetData()[2], _data[3] - mat.GetData()[3]);
+		}
+
+		inline matrix operator*(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetColumnSize() == 2 && mat.GetRowSize() == 2);
+			return matrix(_data[0] * mat.GetData[0], _data[1] * mat.GetData()[1], _data[2] * mat.GetData()[2], _data[3] * mat.GetData()[3]);
+		}
+
+		inline matrix operator/(const dynamic_matrix<_TYPE>& mat) const
+		{
+			stm_assert(mat.GetColumnSize() == 2 && mat.GetRowSize() == 2);
+			return matrix(_data[0] / mat.GetData[0], _data[1] / mat.GetData()[1], _data[2] / mat.GetData()[2], _data[3] / mat.GetData()[3]);
+		}
+
 		//Binary-Assigment Operators
 		matrix& operator+=(const matrix& other)
 		{
@@ -468,6 +609,30 @@ namespace stm
 			return *this;
 		}
 
+		matrix& operator+=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this + mat;
+			return *this;
+		}
+
+		matrix& operator-=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this - mat;
+			return *this;
+		}
+
+		matrix& operator*=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this * mat;
+			return *this;
+		}
+
+		matrix& operator/=(const dynamic_matrix<_TYPE>& mat)
+		{
+			*this = *this / mat;
+			return *this;
+		}
+
 		//Math functions
 		inline matrix Inverse() const
 		{
@@ -479,10 +644,21 @@ namespace stm
 			return matrix(_data[0], _data[2], _data[1], _data[3]);
 		}
 
-		template<unsigned int rows>
-		matrix<_TYPE, rows, 2> Multiplication(const matrix<_TYPE, rows, 2>& other) const
+		template<unsigned int O_COLUMNS>
+		matrix<_TYPE, 2, O_COLUMNS> Multiply(const matrix<_TYPE, 2, O_COLUMNS>& mat) const
 		{
-			return matrix<_TYPE, rows, 2>(other);
+			_TYPE data[2 * O_COLUMNS];
+			for (unsigned int i = 0; i < 2; ++i)
+			{
+				for (unsigned int j = 0; j < O_COLUMNS; ++j)
+				{
+					_TYPE sum = 0;
+					for (unsigned int k = 0; k < 2; ++k)
+						sum += (*this)[i][k] * mat[k][j];
+					data[(i * O_COLUMNS) + j] = sum;
+				}
+			}
+			return matrix<_TYPE, 2, O_COLUMNS>(data);
 		}
 
         vector<_TYPE, 2> Multiply(const vector<_TYPE, 2>& vec)
@@ -496,6 +672,18 @@ namespace stm
             return vector<_TYPE, 2>(dim);
         }
         
+		vector<_TYPE, 2> Multiply(const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(vec.GetSize() == 2);
+			_TYPE dim[2] = { 0, 0 };
+			for (unsigned int i = 0; i < 2; ++i)
+			{
+				for (unsigned int j = 0; j < 2; ++j)
+					dim[i] += vec[j] * (*this)[i][j];
+			}
+			return vector<_TYPE, 2>(dim);
+		}
+
 		inline _TYPE Determinant() const
 		{
 			return (_data[0] * _data[3]) - (_data[1] * _data[2]);
@@ -511,6 +699,13 @@ namespace stm
 			return *this;
 		}
 
+		matrix& SetRowVector(unsigned int row, const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(vec.GetSize() == 2);
+			memcpy(&_data[row * 2], vec.GetData(), 2 * sizeof(_TYPE));
+			return *this;
+		}
+
 		matrix& SetColumnVector(const unsigned int& column, const vector<_TYPE, 2>& vec)
 		{
 			for (unsigned int i = 0; i < 2; ++i)
@@ -518,6 +713,13 @@ namespace stm
 			return *this;
 		}
 
+		matrix& SetColumnVector(unsigned int column, const dynamic_vector<_TYPE>& vec)
+		{
+			stm_assert(vec.GetSize() == 2);
+			for (unsigned int i = 0; i < 2; ++i)
+				(*this)[i][column] = vec[i];
+			return *this;
+		}
 
 		//Data manipulation functions
 		matrix& ApplyToMatrix(_TYPE(*func)(const _TYPE&))
@@ -590,7 +792,21 @@ namespace stm
 	}
 
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
-	matrix<_TYPE, _ROWS, _COLUMNS> pow(const matrix<_TYPE, _ROWS, _COLUMNS>& mat, const unsigned int& power)
+	vector<_TYPE, _ROWS> multiply(const matrix<_TYPE, _ROWS, _COLUMNS>& mat, const dynamic_vector<_TYPE>& vec)
+	{
+		stm_assert(_COLUMNS == vec.GetSize());
+		_TYPE data[_ROWS];
+		for (unsigned int i = 0; i < _ROWS; ++i)
+		{
+			_TYPE sum = 0;
+			for (unsigned int j = 0; j < _COLUMNS; ++j)
+				sum += mat[i][j] * vec[j];
+		}
+		return vector<_TYPE, _ROWS>(data);
+	}
+
+	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
+	matrix<_TYPE, _ROWS, _COLUMNS> pow(const matrix<_TYPE, _ROWS, _COLUMNS>& mat, unsigned int power)
 	{
 		static_assert(_ROWS == _COLUMNS, "Error: non-square matrix");
 		switch (power)
@@ -617,6 +833,18 @@ namespace stm
 	{
 		_TYPE temp = sqrt(determinant(mat));
 		return matrix<_TYPE, 2, 2>(mat[0][0] + temp, mat[0][1], mat[1][0], mat[1][1] + temp) / (sqrt(temp + 2 * (mat[0][0] + mat[1][1])));
+	}
+
+	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
+	matrix<_TYPE, _COLUMNS, _ROWS> transpose(const matrix<_TYPE, _ROWS, _COLUMNS>& mat)
+	{
+		_TYPE temp[_ROWS * _COLUMNS];
+		for (unsigned int i = 0; i < _ROWS; ++i)
+		{
+			for (unsigned int j = 0; j < _COLUMNS; ++j)
+				temp[i + (j * _ROWS)] = (*this)[i][j];
+		}
+		return matrix<_TYPE, _COLUMNS, _ROWS>(temp);
 	}
 
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
@@ -656,7 +884,7 @@ namespace stm
 		for (unsigned int k = 0; k < _COLUMNS; ++k)
 			det += temp[k] * mat[0][k];
 
-		return matrix<_TYPE, _ROWS, _COLUMNS>(temp).Transpose() / det;
+		return transpose(matrix<_TYPE, _ROWS, _COLUMNS>(temp)) / det;
 	}
 
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
@@ -679,19 +907,31 @@ namespace stm
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
 	inline matrix<_TYPE, _ROWS, _COLUMNS> adjugate(const matrix<_TYPE, _ROWS, _COLUMNS>& mat)
 	{
-		return cofactorMatrix(mat).Transpose();
+		return transpose(cofactorMatrix(mat));
 	}
 
 	template<typename _TYPE, unsigned int _DIM>
-	inline matrix<_TYPE, 1, _DIM> torowVector(const vector<_TYPE, _DIM>& vec)
+	inline matrix<_TYPE, 1, _DIM> toRowMatrix(const vector<_TYPE, _DIM>& vec)
 	{
 		return matrix<_TYPE, 1, _DIM>(vec.GetData());
 	}
 
 	template<typename _TYPE, unsigned int _DIM>
-	inline matrix<_TYPE, _DIM, 1> tocolumnVector(const vector<_TYPE, _DIM>& vec)
+	inline matrix<_TYPE, _DIM, 1> toColumnMatrix(const vector<_TYPE, _DIM>& vec)
 	{
 		return matrix<_TYPE, _DIM, 1>(vec.GetData());
+	}
+
+	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
+	inline vector<_TYPE, _ROWS * _COLUMNS> toRowVector(const matrix<_TYPE, _ROWS, _COLUMNS>& mat)
+	{
+		return vector<_TYPE, _ROWS * _COLUMNS>(mat.GetData());
+	}
+
+	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
+	inline vector<_TYPE, _ROWS * _COLUMNS> toColumnVector(const matrix<_TYPE, _ROWS, _COLUMNS>& mat)
+	{
+		return vector<_TYPE, _ROWS * _COLUMNS>(mat.Transpose().GetData());
 	}
 
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>

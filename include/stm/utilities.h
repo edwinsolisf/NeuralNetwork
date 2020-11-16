@@ -26,11 +26,11 @@ namespace stm
 	void Print(const dynamic_matrix<_TYPE>& mat)
 	{
 		std::cout << "[ ";
-		for (unsigned int i = 0; i < mat.GetRows(); ++i)
+		for (unsigned int i = 0; i < mat.GetRowSize(); ++i)
 		{
-			for (unsigned int j = 0; j < mat.GetColumns(); ++j)
-				std::cout << mat[i][j] << (((i != mat.GetRows() - 1) || (j != mat.GetColumns() - 1)) ? " , " : " ");
-			if (i != mat.GetRows() - 1)
+			for (unsigned int j = 0; j < mat.GetColumnSize(); ++j)
+				std::cout << mat[i][j] << (((i != mat.GetRowSize() - 1) || (j != mat.GetColumnSize() - 1)) ? " , " : " ");
+			if (i != mat.GetRowSize() - 1)
 				std::cout << std::endl << "  ";
 			else
 				std::cout << "]" << std::endl;
@@ -43,6 +43,15 @@ namespace stm
 		std::cout << "[ ";
 		for (unsigned int i = 0; i < _DIM; ++i)
 			std::cout << vec[i] << ((i < _DIM - 1) ? " , " : " ");
+		std::cout << "]" << std::endl;
+	}
+
+	template<typename _TYPE>
+	void Print(const dynamic_vector<_TYPE>& vec)
+	{
+		std::cout << "[ ";
+		for (unsigned int i = 0; i < vec.GetSize(); ++i)
+			std::cout << vec[i] << ((i < vec.GetSize() - 1) ? " , " : " ");
 		std::cout << "]" << std::endl;
 	}
 }
