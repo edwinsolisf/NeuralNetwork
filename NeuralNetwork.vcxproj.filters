@@ -24,6 +24,12 @@
     <ClCompile Include="include\stm\matrix_transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\neuralnetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\data_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stm\debug.h">
@@ -59,5 +65,21 @@
     <ClInclude Include="include\stm\dynamic_vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\neuralnewtork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\data_handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\distribution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\data\train-images.idx3-ubyte" />
+    <None Include="assets\data\train-labels.idx1-ubyte" />
   </ItemGroup>
 </Project>

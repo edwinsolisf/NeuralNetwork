@@ -494,6 +494,46 @@ namespace stm
 			return *this;
 		}
 
+		dynamic_matrix& SetAllRows(const dynamic_vector<_T>& vec)
+		{
+			stm_assert(vec.GetSize() == _columns);
+			for(unsigned int i = 0; i < _rows; ++i)
+				memcpy(&_data[i * _columns], vec.GetData(), _columns * sizeof(_T));
+			return *this;
+		}
+
+		dynamic_matrix& SetAllColumns(const dynamic_vector<_T>& vec)
+		{
+			stm_assert(vec.GetSize() == _rows);
+			for (unsigned int i = 0; i < _rows; ++i)
+			{
+				for(unsigned int j = 0; j < _columns; ++j)
+					(*this)[i][j] = vec[i];
+			}
+			return *this;
+		}
+
+		template<unsigned int columns>
+		dynamic_matrix& SetAllRows(const vector<_T, columns>& vec)
+		{
+			stm_assert(vec.GetSize() == _columns);
+			for (unsigned int i = 0; i < _rows; ++i)
+				memcpy(&_data[i * _columns], vec.GetData(), _columns * sizeof(_T));
+			return *this;
+		}
+
+		template<unsigned int rows>
+		dynamic_matrix& SetAllColumns(const vector<_T, rows>& vec)
+		{
+			stm_assert(vec.GetSize() == _rows);
+			for (unsigned int i = 0; i < _rows; ++i)
+			{
+				for (unsigned int j = 0; j < _columns; ++j)
+					(*this)[i][j] = vec[i];
+			}
+			return *this;
+		}
+
 		//Data manipulation functions
 		void Resize(unsigned int rows, unsigned int columns)
 		{
