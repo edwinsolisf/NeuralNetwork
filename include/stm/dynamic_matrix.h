@@ -26,9 +26,10 @@ namespace stm
 			memcpy(_data, data, _rows * _columns * sizeof(_T));
 		}
 
-		dynamic_matrix(unsigned int rows, unsigned int columns, const _T& value)
-			:_data(new _T[rows * columns]{ value }), _rows(rows), _columns(columns)
+		dynamic_matrix(unsigned int rows, unsigned int columns, _T value)
+			:_data(new _T[rows * columns]), _rows(rows), _columns(columns)
 		{
+			std::fill_n(_data, _rows * _columns, value);
 			stm_assert(rows != 0 && columns != 0);
 		}
 
@@ -461,7 +462,7 @@ namespace stm
 				temp[i] = (*this)[i][column];
 			return std::move(temp);
 		}
-
+		
 		dynamic_matrix& SetRowVector(unsigned int row, const dynamic_vector<_T>& vec)
 		{
 			stm_assert(vec.GetSize() == _columns);
@@ -540,7 +541,8 @@ namespace stm
 			stm_assert(rows != 0 && columns != 0);
 			if (rows * columns > GetSize())
 			{
-				_T* newData = new _T[rows * columns]{ 0 };
+				_T* newData = new _T[rows * columns];
+				memset(newData, 0, sizeof(_T) * rows * columns);
 				memcpy(newData, _data, rows * columns * sizeof(_T));
 				delete[] _data;
 				_data = newData;
@@ -660,6 +662,7 @@ namespace stm
 			_TYPE sum = 0;
 			for (unsigned int j = 0; j < mat.GetColumnSize(); ++j)
 				sum += mat[i][j] * vec[j];
+			temp[i] = sum;
 		}
 		return std::move(temp);
 	}
@@ -674,6 +677,7 @@ namespace stm
 			_TYPE sum = 0;
 			for (unsigned int j = 0; j < mat.GetColumnSize(); ++j)
 				sum += mat[i][j] * vec[j];
+			temp[i] = sum;
 		}
 		return std::move(temp);
 	}

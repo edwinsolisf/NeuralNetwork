@@ -30,6 +30,9 @@
     <ClCompile Include="src\data_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\avxMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stm\debug.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\stm\function.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\avxMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

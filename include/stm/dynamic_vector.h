@@ -24,9 +24,10 @@ namespace stm
 			memcpy(_data, data, _dimensions * sizeof(_T));
 		}
 
-		dynamic_vector(unsigned int dimensions, const _T& value)
-			:_data(new _T[dimensions]{ value }), _dimensions(dimensions)
+		dynamic_vector(unsigned int dimensions, _T value)
+			:_data(new _T[dimensions]), _dimensions(dimensions)
 		{
+			std::fill_n(_data, _dimensions, value);
 			stm_assert(dimensions != 0);
 		}
 
@@ -98,7 +99,8 @@ namespace stm
 			stm_assert(dimensions != 0);
 			if (dimensions > GetSize())
 			{
-				_T* newData = new _T[dimensions]{ 0 };
+				_T* newData = new _T[dimensions];
+				memset(newData, 0, sizeof(_T) * dimensions);
 				memcpy(newData, _data, _dimensions * sizeof(_T));
 				delete[] _data;
 				_data = newData;

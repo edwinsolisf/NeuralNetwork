@@ -26,8 +26,7 @@ namespace stm
 
 		matrix(const _TYPE& value)
 		{
-			for (unsigned int i = 0; i < GetSize(); ++i)
-				_data[i] = value;
+			std::fill_n(_data, GetSize(), value);
 		}
 
 		matrix(const _TYPE data[_ROWS * _COLUMNS])
@@ -49,8 +48,8 @@ namespace stm
 		}
 
 		//Unary Operators
-        inline _TYPE* operator[](const unsigned int& index) { stm_assert(index < _ROWS); return &_data[index * _COLUMNS]; }
-        inline const _TYPE* operator[](const unsigned int& index) const { stm_assert(index < _ROWS); return &_data[index * _COLUMNS]; }
+        inline _TYPE* operator[](unsigned int index) { stm_assert(index < _ROWS); return &_data[index * _COLUMNS]; }
+        inline const _TYPE* operator[](unsigned int index) const { stm_assert(index < _ROWS); return &_data[index * _COLUMNS]; }
 
 		inline matrix operator+() const
 		{
@@ -451,8 +450,7 @@ namespace stm
 
 		matrix(const _TYPE& value)
 		{
-			for (unsigned int i = 0; i < GetSize(); ++i)
-				_data[i] = value;
+			std::fill_n(_data, GetSize(), value);
 		}
 
 		matrix(const _TYPE& val_00, const _TYPE& val_01, const _TYPE& val_10, const _TYPE& val_11)
@@ -482,8 +480,8 @@ namespace stm
 		}
 
 		//Unary Operators
-        inline _TYPE* operator[](const unsigned int& index) { stm_assert(index < 2); return &_data[index * 2]; }
-        inline const _TYPE* operator[](const unsigned int& index) const { stm_assert(index < 2); return &_data[index * 2]; }
+        inline _TYPE* operator[](unsigned int index) { stm_assert(index < 2); return &_data[index * 2]; }
+        inline const _TYPE* operator[](unsigned int index) const { stm_assert(index < 2); return &_data[index * 2]; }
 
 		inline matrix operator+() const
 		{

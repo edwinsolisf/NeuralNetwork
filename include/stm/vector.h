@@ -30,8 +30,7 @@ namespace stm
 
 		vector(const _TYPE& value)
 		{
-			for (unsigned int i = 0; i < _DIM; ++i)
-				_data[i] = value;
+			std::fill_n(_data, GetSize(), value);
 		}
 
 		vector(const vector& other)
