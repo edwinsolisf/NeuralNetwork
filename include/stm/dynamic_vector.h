@@ -12,8 +12,9 @@ namespace stm
 
 		//Constructors
 		dynamic_vector(unsigned int dimensions)
-			:_data(new _T[dimensions]{ 0 }), _dimensions(dimensions)
+			:_data(new _T[dimensions]), _dimensions(dimensions)
 		{
+			memset(_data, 0, dimensions * sizeof(_T));
 			stm_assert(dimensions != 0);
 		}
 
@@ -87,7 +88,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = -_data[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		inline _T& operator[](unsigned int index) { stm_assert(index < _dimensions); return _data[index]; }
@@ -122,7 +123,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] + other[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector operator-(const dynamic_vector& other) const
@@ -132,7 +133,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] - other[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector operator*(const dynamic_vector& other) const
@@ -142,7 +143,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] * other[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector operator/(const dynamic_vector& other) const
@@ -152,47 +153,47 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] / other[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		template<unsigned int dimensions>
 		vector<_T, dimensions> operator+(const vector<_T, dimensions>& static_vector) const
 		{
 			stm_assert(_dimensions == dimensions);
-			_T temp[dimensions];
+			vector<_T, dimensions> temp;
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] + static_vector[i];
-			return vector<_T, dimensions>(temp);
+			return temp;
 		}
 
 		template<unsigned int dimensions>
 		vector<_T, dimensions> operator-(const vector<_T, dimensions>& static_vector) const
 		{
 			stm_assert(_dimensions == dimensions);
-			_T temp[dimensions];
+			vector<_T, dimensions> temp;
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] - static_vector[i];
-			return vector<_T, dimensions>(temp);
+			return temp;
 		}
 
 		template<unsigned int dimensions>
 		vector<_T, dimensions> operator*(const vector<_T, dimensions>& static_vector) const
 		{
 			stm_assert(_dimensions == dimensions);
-			_T temp[dimensions];
+			vector<_T, dimensions> temp;
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] * static_vector[i];
-			return vector<_T, dimensions>(temp);
+			return temp;
 		}
 
 		template<unsigned int dimensions>
 		vector<_T, dimensions> operator/(const vector<_T, dimensions>& static_vector) const
 		{
 			stm_assert(_dimensions == dimensions);
-			_T temp[dimensions];
+			vector<_T, dimensions> temp;
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] / static_vector[i];
-			return vector<_T, dimensions>(temp);
+			return temp;
 		}
 
 		dynamic_vector operator+(const _T& value) const
@@ -200,7 +201,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] + value;
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector operator-(const _T& value) const
@@ -208,7 +209,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] - value;
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector operator*(const _T& value) const
@@ -216,7 +217,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] * value;
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector operator/(const _T& value) const
@@ -224,7 +225,7 @@ namespace stm
 			dynamic_vector temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp[i] = _data[i] / value;
-			return std::move(temp);
+			return temp;
 		}
 
 		//Binary Assigment Operators
@@ -330,7 +331,7 @@ namespace stm
 			dynamic_vector<O_TYPE> temp(_dimensions);
 			for (unsigned int i = 0; i < _dimensions; ++i)
 				temp._data[i] = O_TYPE(_data[i]);
-			return std::move(temp);
+			return temp;
 		}
 
 		//Data Info Functions
@@ -346,7 +347,7 @@ namespace stm
 
 		inline dynamic_vector UnitVector() const
 		{
-			return std::move((*this) / Magnitude());
+			return (*this) / Magnitude();
 		}
 
 		_T DotProduct(const dynamic_vector& other) const

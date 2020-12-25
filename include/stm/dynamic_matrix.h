@@ -14,8 +14,9 @@ namespace stm
 
 		//Constructors
 		dynamic_matrix(unsigned int rows, unsigned int columns)
-			:_data(new _T[rows * columns]{ 0 }), _rows(rows), _columns(columns)
+			:_data(new _T[rows * columns]), _rows(rows), _columns(columns)
 		{
+			memset(_data, 0, rows * columns * sizeof(_T));
 			stm_assert(rows != 0 && columns != 0);
 		}
 
@@ -37,6 +38,12 @@ namespace stm
 			:_data(new _T[other._rows * other._columns]), _rows(other._rows), _columns(other._columns)
 		{
 			memcpy(_data, other._data, _rows * _columns * sizeof(_T));
+		}
+
+		//Destructor
+		~dynamic_matrix()
+		{
+			delete[] _data;
 		}
 
 		dynamic_matrix(dynamic_matrix&& other) noexcept
@@ -99,7 +106,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns, _data);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = -_data[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		//Binary Operators
@@ -109,7 +116,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] + other._data[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix operator-(const dynamic_matrix& other) const
@@ -118,7 +125,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] - other._data[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix operator*(const dynamic_matrix& other) const
@@ -127,7 +134,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] * other._data[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix operator/(const dynamic_matrix& other) const
@@ -136,7 +143,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] / other._data[i];
-			return std::move(temp);
+			return temp;
 		}
 
 		
@@ -144,40 +151,40 @@ namespace stm
 		matrix<_T, rows, columns> operator+(const matrix<_T, rows, columns>& static_matrix) const
 		{
 			stm_assert(_rows == rows && _columns == columns);
-			_T temp[rows * columns];
+			stm::matrix<_T, rows, columns> temp;
 			for (unsigned int i = 0; i < static_matrix.GetSize(); ++i)
-				temp[i] = _data[i] + static_matrix.GetData()[i];
-			return stm::matrix<_T, rows, columns>(temp);
+				temp[0][i] = _data[i] + static_matrix.GetData()[i];
+			return temp;
 		}
 
 		template<unsigned int rows, unsigned int columns>
 		matrix<_T, rows, columns> operator-(const matrix<_T, rows, columns>& static_matrix) const
 		{
 			stm_assert(_rows == rows && _columns == columns);
-			_T temp[rows * columns];
+			stm::matrix<_T, rows, columns> temp;
 			for (unsigned int i = 0; i < static_matrix.GetSize(); ++i)
-				temp[i] = _data[i] - static_matrix.GetData()[i];
-			return stm::matrix<_T, rows, columns>(temp);
+				temp[0][i] = _data[i] - static_matrix.GetData()[i];
+			return temp;
 		}
 
 		template<unsigned int rows, unsigned int columns>
 		matrix<_T, rows, columns> operator*(const matrix<_T, rows, columns>& static_matrix) const
 		{
 			stm_assert(_rows == rows && _columns == columns);
-			_T temp[rows * columns];
+			stm::matrix<_T, rows, columns> temp;
 			for (unsigned int i = 0; i < static_matrix.GetSize(); ++i)
-				temp[i] = _data[i] * static_matrix.GetData()[i];
-			return stm::matrix<_T, rows, columns>(temp);
+				temp[0][i] = _data[i] * static_matrix.GetData()[i];
+			return temp;
 		}
 
 		template<unsigned int rows, unsigned int columns>
 		matrix<_T, rows, columns> operator/(const matrix<_T, rows, columns>& static_matrix) const
 		{
 			stm_assert(_rows == rows && _columns == columns);
-			_T temp[rows * columns];
+			stm::matrix<_T, rows, columns> temp;
 			for (unsigned int i = 0; i < static_matrix.GetSize(); ++i)
-				temp[i] = _data[i] / static_matrix.GetData()[i];
-			return stm::matrix<_T, rows, columns>(temp);
+				temp[0][i] = _data[i] / static_matrix.GetData()[i];
+			return temp;
 		}
 
 		dynamic_matrix operator+(const _T& value) const
@@ -185,7 +192,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] + value;
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix operator-(const _T& value) const
@@ -193,7 +200,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] - value;
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix operator*(const _T& value) const
@@ -201,7 +208,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] * value;
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix operator/(const _T& value) const
@@ -209,7 +216,7 @@ namespace stm
 			dynamic_matrix temp(_rows, _columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
 				temp._data[i] = _data[i] / value;
-			return std::move(temp);
+			return temp;
 		}
 
 		//Binary-assigment operators
@@ -250,7 +257,7 @@ namespace stm
 		{
 			stm_assert(_rows == rows && _columns == columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
-				_data[i] = _data[i] + static_matrix.GetData()[i];
+				_data[i] = _data[i] + static_matrix[0][i];
 			return *this;
 		}
 
@@ -259,7 +266,7 @@ namespace stm
 		{
 			stm_assert(_rows == rows && _columns == columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
-				_data[i] = _data[i] - static_matrix.GetData()[i];
+				_data[i] = _data[i] - static_matrix[0][i];
 			return *this;
 		}
 
@@ -268,7 +275,7 @@ namespace stm
 		{
 			stm_assert(_rows == rows && _columns == columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
-				_data[i] = _data[i] * static_matrix.GetData()[i];
+				_data[i] = _data[i] * static_matrix[0][i];
 			return *this;
 		}
 
@@ -277,7 +284,7 @@ namespace stm
 		{
 			stm_assert(_rows == rows && _columns == columns);
 			for (unsigned int i = 0; i < _rows * _columns; ++i)
-				_data[i] = _data[i] / static_matrix.GetData()[i];
+				_data[i] = _data[i] / static_matrix[0][i];
 			return *this;
 		}
 
@@ -329,7 +336,7 @@ namespace stm
 					}
 				}
 			}
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix Inverse() const
@@ -347,7 +354,7 @@ namespace stm
 			for (unsigned int k = 0; k < _columns; ++k)
 				determinant += temp._data[k] * _data[k];
 
-			return std::move(temp.Transpose() / determinant);
+			return temp.Transpose() / determinant;
 		}
 
 		dynamic_matrix Transpose() const
@@ -358,7 +365,7 @@ namespace stm
 				for (unsigned int j = 0; j < _columns; ++j)
 					temp._data[i + (j * _rows)] = (*this)[i][j];
 			}
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_matrix SubMatrix(unsigned int rowSize, unsigned int columnSize, unsigned int rowOffset, unsigned int columnOffset)
@@ -366,23 +373,19 @@ namespace stm
 			dynamic_matrix temp(rowSize, columnSize);
 			for (unsigned int i = rowOffset; i < rowOffset + rowSize; ++i)
 				memcpy(temp._data[i - rowOffset], _data[(i * _columns) + columnOffset], columnSize * sizeof(_T));
-			return std::move(temp);
+			return temp;
 		}
 
 		_T Determinant() const
 		{
 			stm_assert(_rows == _columns);
 			if (_rows == 2)
-			{
 				return (_data[0] * _data[3]) - (_data[1] * _data[2]);
-			}
 			else
 			{
 				_T sum = 0;
 				for (unsigned int i = 0; i < _rows; ++i)
-				{
 					sum += (i % 2) ? -(Minor(0, i).Determinant() * _data[i]) : (Minor(0, i).Determinant() * _data[i]);
-				}
 				return sum;
 			}
 		}
@@ -401,7 +404,7 @@ namespace stm
 					temp._data[(i * mat._columns) + j] = sum;
 				}
 			}
-			return std::move(temp);
+			return temp;
 		}
 
 		template<unsigned int rows, unsigned int columns>
@@ -419,7 +422,7 @@ namespace stm
 					temp._data[(i * static_matrix.GetColumnSize()) + j] = sum;
 				}
 			}
-			return std::move(temp);
+			return temp;
 		}
 
 		dynamic_vector<_T> Multiply(const dynamic_vector<_T>& vec) const
@@ -432,7 +435,7 @@ namespace stm
 				for (unsigned int j = 0; j < _columns; ++j)
 					temp[i] += vec[j] * (*this)[i][j];
 			}
-			return std::move(temp);
+			return temp;
 		}
 
 		template<unsigned int columns>
@@ -446,7 +449,7 @@ namespace stm
 				for (unsigned int j = 0; j < _columns; ++j)
 					temp[i] += vec[j] * (*this)[i][j];
 			}
-			return std::move(temp);
+			return temp;
 		}
 
 
@@ -460,7 +463,7 @@ namespace stm
 			dynamic_vector<_T> temp(_rows);
 			for (unsigned int i = 0; i < _rows; ++i)
 				temp[i] = (*this)[i][column];
-			return std::move(temp);
+			return temp;
 		}
 		
 		dynamic_matrix& SetRowVector(unsigned int row, const dynamic_vector<_T>& vec)
@@ -577,7 +580,7 @@ namespace stm
 			dynamic_matrix<O_TYPE> temp(_rows, _columns);
 			for (unsigned int i = 0; i < GetSize(); ++i)
 				temp._data[i] = O_TYPE(_data[i]);
-			return std::move(temp);
+			return temp;
 		}
 
 		//Data Info Functions
@@ -587,11 +590,6 @@ namespace stm
 		inline unsigned int GetColumnSize() const { return _columns; }
 		inline unsigned int GetSize() const { return _rows * _columns; }
 
-		//Destructor
-		~dynamic_matrix()
-		{
-			delete[] _data;
-		}
 
 	private:
 		_T* _data;
@@ -610,10 +608,10 @@ namespace stm
 				_TYPE sum = 0;
 				for (unsigned int k = 0; k < mat1.GetColumnSize(); ++k)
 					sum += mat1[i][k] * mat2[k][j];
-				temp.GetData()[(i * mat2.GetColumnSize()) + j] = sum;
+				temp[0][(i * mat2.GetColumnSize()) + j] = sum;
 			}
 		}
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
@@ -628,10 +626,10 @@ namespace stm
 				_TYPE sum = 0;
 				for (unsigned int k = 0; k < mat1.GetColumnSize(); ++k)
 					sum += mat1[i][k] * mat2[k][j];
-				temp.GetData()[(i * mat2.GetColumnSize()) + j] = sum;
+				temp[0][(i * mat2.GetColumnSize()) + j] = sum;
 			}
 		}
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE, unsigned int _ROWS, unsigned int _COLUMNS>
@@ -646,10 +644,10 @@ namespace stm
 				_TYPE sum = 0;
 				for (unsigned int k = 0; k < mat1.GetColumnSize(); ++k)
 					sum += mat1[i][k] * mat2[k][j];
-				temp.GetData()[(i * mat2.GetColumnSize()) + j] = sum;
+				temp[0][(i * mat2.GetColumnSize()) + j] = sum;
 			}
 		}
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE>
@@ -664,7 +662,7 @@ namespace stm
 				sum += mat[i][j] * vec[j];
 			temp[i] = sum;
 		}
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE, unsigned int _DIM>
@@ -679,7 +677,7 @@ namespace stm
 				sum += mat[i][j] * vec[j];
 			temp[i] = sum;
 		}
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE>
@@ -717,9 +715,9 @@ namespace stm
 		for (unsigned int i = 0; i < mat.GetRowSize(); ++i)
 		{
 			for (unsigned int j = 0; j < mat.GetColumnSize(); ++j)
-				temp.GetData()[i + (j * mat.GetRowSize())] = (*this)[i][j];
+				temp[0][i + (j * mat.GetRowSize())] = (*this)[i][j];
 		}
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE>
@@ -728,16 +726,12 @@ namespace stm
 		stm_assert(mat.GetRowSize() == mat.GetColumnSize());
 
 		if (mat.GetRowSize() == 2)
-		{
 			return (mat[0][0] * mat[1][1]) - (mat[0][1] * mat[1][0]);
-		}
 		else
 		{
 			_TYPE sum = 0;
 			for (unsigned int i = 0; i < mat.GetRowSize(); ++i)
-			{
 				sum += (i % 2) ? -(determinant(mat.Minor(0, i)) * mat[0][i]) : (determinant(mat.Minor(0, i)) * mat[0][i]);
-			}
 			return sum;
 		}
 	}
@@ -752,15 +746,13 @@ namespace stm
 		for (unsigned int i = 0; i < mat.GetRowSize(); ++i)
 		{
 			for (unsigned int j = 0; j < mat.GetColumnSize(); ++j)
-			{
-				temp.GetData()[(i * mat.GetColumnSize()) + j] = (((i + j) % 2) ? -(determinant(mat.Minor(i, j))) : (determinant(mat.Minor(i, j))));
-			}
+				temp[0][(i * mat.GetColumnSize()) + j] = (((i + j) % 2) ? -(determinant(mat.Minor(i, j))) : (determinant(mat.Minor(i, j))));
 		}
 
 		for (unsigned int k = 0; k < mat.GetColumnSize(); ++k)
 			det += temp[k] * mat[0][k];
 
-		return std::move(transpose(temp) / det);
+		return transpose(temp) / det;
 	}
 
 	template<typename _TYPE>
@@ -773,41 +765,40 @@ namespace stm
 		{
 			for (unsigned int j = 0; j < mat.GetColumnSize(); ++j)
 			{
-				temp.GetData()[(i * mat.GetColumnSize()) + j] = (((i + j) % 2) ? -(determinant(mat.Minor(i, j))) : (determinant(mat.Minor(i, j))));
+				temp[0][(i * mat.GetColumnSize()) + j] = (((i + j) % 2) ? -(determinant(mat.Minor(i, j))) : (determinant(mat.Minor(i, j))));
 			}
 		}
-
-		return std::move(temp);
+		return temp;
 	}
 
 	template<typename _TYPE>
 	inline dynamic_matrix<_TYPE> adjugate(const dynamic_matrix<_TYPE>& mat)
 	{
-		return std::move(transpose(cofactorMatrix(mat)));
+		return transpose(cofactorMatrix(mat));
 	}
 
 	template<typename _TYPE>
 	inline dynamic_matrix<_TYPE> toRowMatrix(const dynamic_vector<_TYPE>& vec)
 	{
-		return std::move(dynamic_matrix<_TYPE>(1, vec.GetSize(), vec.GetData()));
+		return dynamic_matrix<_TYPE>(1, vec.GetSize(), vec.GetData());
 	}
 
 	template<typename _TYPE>
 	inline dynamic_matrix<_TYPE> toColumnMatrix(const dynamic_vector<_TYPE>& vec)
 	{
-		return std::move(dynamic_matrix<_TYPE>(vec.GetSize(), 1, vec.GetData()));
+		return dynamic_matrix<_TYPE>(vec.GetSize(), 1, vec.GetData());
 	}
 
 	template<typename _TYPE>
 	inline dynamic_vector<_TYPE> toRowVector(const dynamic_matrix<_TYPE>& mat)
 	{
-		return std::move(dynamic_vector<_TYPE>(mat.GetSize(), mat.GetData()));
+		return dynamic_vector<_TYPE>(mat.GetSize(), mat.GetData());
 	}
 
 	template<typename _TYPE>
 	inline dynamic_vector<_TYPE> toColumnVector(const dynamic_matrix<_TYPE>& mat)
 	{
-		return std::move(dynamic_vector<_TYPE>(mat.GetSize(), mat.Transpose().GetData()));
+		return dynamic_vector<_TYPE>(mat.GetSize(), mat.Transpose().GetData());
 	}
 
 	template<typename _TYPE>
@@ -816,13 +807,13 @@ namespace stm
 		dynamic_matrix<_TYPE> mat(dimensions);
 		for (unsigned int i = 0; i < dimensions; ++i)
 			mat[i][i] = (_TYPE)1;
-		return std::move(mat);
+		return mat;
 	}
 
 	template<typename _TYPE>
 	inline dynamic_matrix<_TYPE> GetZeroMatrix(unsigned int dimensions)
 	{
-		return std::move(dynamic_matrix<_TYPE>(dimensions));
+		return dynamic_matrix<_TYPE>(dimensions);
 	}
 
 	template<typename _TYPE>
@@ -831,7 +822,7 @@ namespace stm
 		dynamic_matrix<_TYPE> mat(dimensions);
 		for (unsigned int i = 0; i < dimensions; ++i)
 			mat[i][dimensions - 1 - i] = (_TYPE)1;
-		return std::move(mat);
+		return mat;
 	}
 
 	typedef dynamic_matrix<int> mat_i;

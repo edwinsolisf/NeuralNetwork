@@ -15,7 +15,7 @@ public:
 
 	void SetUpData(unsigned int samples, unsigned int inputs, unsigned int outputs, float* inputData, float* outputData);
 	void SetUpInputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount));
-	void SetUpOutputtData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount));
+	void SetUpOutputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount));
 
 	void SetUpTrainingConfiguration(unsigned int hiddenLayers, unsigned int neurons, unsigned int sampleBatch, unsigned int sampleCount, unsigned int epochs, float learningRate, float momentum);
 	void EnableMultibatch() { _multiBatch = true; }

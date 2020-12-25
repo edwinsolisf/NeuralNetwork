@@ -8,7 +8,7 @@
 #include "stm/utilities.h"
 #include "avxMath.h"
 
-stm::dynamic_vector<float> quadratic_prime(const stm::dynamic_vector<float>& calculated, const stm::dynamic_vector<float>& expected)
+static stm::dynamic_vector<float> quadratic_prime(const stm::dynamic_vector<float>& calculated, const stm::dynamic_vector<float>& expected)
 {
 	return std::move(calculated - expected);
 }
@@ -39,7 +39,7 @@ void NeuralNetwork::SetUpInputData(const std::string& file, float* (*readfile)(c
 	_inputCount = _inputData->GetSampleSize();
 }
 
-void NeuralNetwork::SetUpOutputtData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount))
+void NeuralNetwork::SetUpOutputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount))
 {
 	delete _outputData;
 	_outputData = new Data(file, DATA_TYPE::OUTPUT, readfile);
@@ -403,13 +403,13 @@ void NeuralNetwork::BackProp(const stm::dynamic_vector<float>& input, const stm:
 	//stm::dynamic_matrix<float> outputWeightsAdjust = stm::dynamic_matrix<float>(_outputCount, _neuronCount);
 	//stm::dynamic_vector<float> outputBiasesAdjust = stm::dynamic_vector<float>(_outputCount);
 
-	aValues.ApplyToMatrix(Sigmoid);
+	aValues.ApplyToMatrix(Sigmoid_Prime);
 	stm::dynamic_vector<float> adjust = Cost_Derivative(out, output) * last_aValue.ApplyToVector(Sigmoid_Prime);
 
-	stm::dynamic_vector<float> outputBiasesAdjust = adjust;
-	stm::dynamic_matrix<float> outputWeightsAdjust = stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(zValues.GetRowVector(_layerCount)));
+	stm::dynamic_vector<float> outputBiasesAdjust = std::move(adjust);
+	stm::dynamic_matrix<float> outputWeightsAdjust = stm::multiply(stm::toColumnMatrix(outputBiasesAdjust), stm::toRowMatrix(zValues.GetRowVector(_layerCount)));
 
-	adjust = stm::multiply(_outputWeights.Transpose(), adjust) * aValues.GetRowVector(_layerCount);
+	adjust = stm::multiply(_outputWeights.Transpose(), outputBiasesAdjust) * aValues.GetRowVector(_layerCount);
 
 	layersBiasesAdjust.SetRowVector(_layerCount - 1, adjust);
 	layersWeightsAdjust[_layerCount - 1] = stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(zValues.GetRowVector(_layerCount - 1)));
@@ -422,8 +422,8 @@ void NeuralNetwork::BackProp(const stm::dynamic_vector<float>& input, const stm:
 	}
 
 	adjust = stm::multiply(_layersWeights[0].Transpose(), adjust) * aValues.GetRowVector(0);
-	stm::dynamic_vector<float> inputBiasesAdjust = adjust;
-	stm::dynamic_matrix<float> inputWeightsAdjust = stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(input));
+	stm::dynamic_vector<float> inputBiasesAdjust = std::move(adjust);
+	stm::dynamic_matrix<float> inputWeightsAdjust = stm::multiply(stm::toColumnMatrix(inputBiasesAdjust), stm::toRowMatrix(input));
 
 	std::lock_guard<std::mutex> guard(adjustLock);
 	_outputBiasesAdjust += outputBiasesAdjust;

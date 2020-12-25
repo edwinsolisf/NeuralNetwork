@@ -53,10 +53,10 @@ namespace stm
 
 		vector operator-() const
 		{
-			_TYPE data[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				data[i] = -_data[i];
-			return vector(data);
+				temp._data[i] = -_data[i];
+			return temp;
 		}
 
         inline _TYPE& operator[](const unsigned int& index) { stm_assert(index < _DIM); return _data[index]; }
@@ -73,120 +73,127 @@ namespace stm
 		template<typename O_TYPE>
 		vector<O_TYPE, _DIM> Cast() const
 		{
-			_TYPE data[_DIM];
+			vector<O_TYPE, _DIM> temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				data[i] = O_TYPE(_data[i]);
-			return vector<O_TYPE, _DIM>(data);
+				temp._data[i] = O_TYPE(_data[i]);
+			return temp;
 		}
 
 		//Data manipulation functions
-		vector& ApplyToVector(_TYPE(*func)(const _TYPE&))
+		vector& ApplyToVector(_TYPE(*func)(_TYPE))
 		{
 			for (unsigned int i = 0; i < _DIM; ++i)
 				_data[i] = func(_data[i]);
 			return *this;
 		}
 
+		vector& SetAll(_TYPE value)
+		{
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				_data[i] = value;
+			return *this;
+		}
+
 		//Binary Operators
 		vector operator+(const vector& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] + other._data[i];
-			return vector(temp);
+				temp._data[i] = _data[i] + other._data[i];
+			return temp;
 		}
 
 
 		vector operator-(const vector& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] - other._data[i];
-			return vector(temp);
+				temp._data[i] = _data[i] - other._data[i];
+			return temp;
 		}
 
 		vector operator*(const vector& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] * other._data[i];
-			return vector(temp);
+				temp._data[i] = _data[i] * other._data[i];
+			return temp;
 		}
 
 		vector operator/(const vector& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] / other._data[i];
-			return vector(temp);
+				temp._data[i] = _data[i] / other._data[i];
+			return temp;
 		}
 
 		vector operator+(const _TYPE& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] + other;
-			return vector(temp);
+				temp._data[i] = _data[i] + other;
+			return temp;
 		}
 
 		vector operator-(const _TYPE& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] - other;
-			return vector(temp);
+				temp._data[i] = _data[i] - other;
+			return temp;
 		}
 
 		vector operator*(const _TYPE& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] * other;
-			return vector(temp);
+				temp._data[i] = _data[i] * other;
+			return temp;
 		}
 
 		vector operator/(const _TYPE& other) const
 		{
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] / other;
-			return vector(temp);
+				temp._data[i] = _data[i] / other;
+			return temp;
 		}
 
 		vector operator+(const dynamic_vector<_TYPE>& vec) const
 		{
 			stm_assert(_DIM == vec.GetSize());
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] + vec[i];
-			return vector(temp);
+				temp._data[i] = _data[i] + vec[i];
+			return temp;
 		}
 
 		vector operator-(const dynamic_vector<_TYPE>& vec) const
 		{
 			stm_assert(_DIM == vec.GetSize());
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] - vec[i];
-			return vector(temp);
+				temp._data[i] = _data[i] - vec[i];
+			return temp;
 		}
 
 		vector operator*(const dynamic_vector<_TYPE>& vec) const
 		{
 			stm_assert(_DIM == vec.GetSize());
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] * vec[i];
-			return vector(temp);
+				temp._data[i] = _data[i] * vec[i];
+			return temp;
 		}
 
 		vector operator/(const dynamic_vector<_TYPE>& vec) const
 		{
 			stm_assert(_DIM == vec.GetSize());
-			_TYPE temp[_DIM];
+			vector temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp[i] = _data[i] / vec[i];
-			return vector(temp);
+				temp._data[i] = _data[i] / vec[i];
+			return temp;
 		}
 
 		//Binary assigment operators
@@ -371,17 +378,24 @@ namespace stm
 		template<typename O_TYPE>
 		vector<O_TYPE, 4> Cast() const
 		{
-			_TYPE data[4];
+			vector<O_TYPE, 4> temp;
 			for (unsigned int i = 0; i < 4; ++i)
-				data[i] = O_TYPE(_data[i]);
-			return vector<O_TYPE, 4>(data);
+				temp._data[i] = O_TYPE(_data[i]);
+			return temp;
 		}
 
 		//Data manipulation functions
-		vector& ApplyToVector(_TYPE(*func)(const _TYPE&))
+		vector& ApplyToVector(_TYPE(*func)(_TYPE))
 		{
 			for (unsigned int i = 0; i < 4; ++i)
 				_data[i] = func(_data[i]);
+			return *this;
+		}
+
+		vector& SetAll(_TYPE value)
+		{
+			for (unsigned int i = 0; i < 4; ++i)
+				_data[i] = value;
 			return *this;
 		}
 
@@ -627,17 +641,24 @@ namespace stm
 		template<typename O_TYPE>
 		vector<O_TYPE, 3> Cast() const
 		{
-			_TYPE data[3];
+			vector<O_TYPE, 3> temp;
 			for (unsigned int i = 0; i < 3; ++i)
-				data[i] = O_TYPE(_data[i]);
-			return vector<O_TYPE, 3>(data);
+				temp._data[i] = O_TYPE(_data[i]);
+			return temp;
 		}
 
 		//Data manipulation functions
-		vector& ApplyToVector(_TYPE(*func)(const _TYPE&))
+		vector& ApplyToVector(_TYPE(*func)(_TYPE))
 		{
 			for (unsigned int i = 0; i < 3; ++i)
 				_data[i] = func(_data[i]);
+			return *this;
+		}
+
+		vector& SetAll(_TYPE value)
+		{
+			for (unsigned int i = 0; i < 3; ++i)
+				_data[i] = value;
 			return *this;
 		}
 
@@ -890,17 +911,24 @@ namespace stm
 		template<typename O_TYPE>
 		vector<O_TYPE, 2> Cast() const
 		{
-			_TYPE data[2];
+			vector<O_TYPE, 2> temp;
 			for (unsigned int i = 0; i < 2; ++i)
-				data[i] = O_TYPE(_data[i]);
-			return vector<O_TYPE, 2>(data);
+				temp._data[i] = O_TYPE(_data[i]);
+			return temp;
 		}
 
 		//Data manipulation functions
-		vector& ApplyToVector(_TYPE(*func)(const _TYPE&))
+		vector& ApplyToVector(_TYPE(*func)(_TYPE))
 		{
 			for (unsigned int i = 0; i < 2; ++i)
 				_data[i] = func(_data[i]);
+			return *this;
+		}
+
+		vector& SetAll(_TYPE value)
+		{
+			for (unsigned int i = 0; i < 2; ++i)
+				_data[i] = value;
 			return *this;
 		}
 
