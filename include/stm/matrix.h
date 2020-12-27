@@ -845,7 +845,7 @@ namespace stm
 		for (unsigned int i = 0; i < _ROWS; ++i)
 		{
 			for (unsigned int j = 0; j < _COLUMNS; ++j)
-				temp[0][i + (j * _ROWS)] = (*this)[i][j];
+				temp[0][i + (j * _ROWS)] = mat[i][j];
 		}
 		return temp;
 	}

@@ -14,7 +14,6 @@ enum class DATA_TYPE
 class Data
 {
 public:
-
 	Data(std::string filePath, DATA_TYPE dataType, float* (*readFile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount));
 	Data(unsigned int sampleSize, unsigned int sampleCount, DATA_TYPE type, const float* data);
 	~Data();
@@ -26,12 +25,13 @@ public:
 	unsigned int GetSampleCount() const { return _sampleCount; }
 
 	void SetNewData(float* data);
+
 private:
-	std::string _filePath;
-	DATA_TYPE _dataType;
-	float* _data;
 	unsigned int _sampleSize;
 	unsigned int _sampleCount;
+	float* _data;
+	DATA_TYPE _dataType;
+	std::string _filePath;
 
 	float* (*ReadFile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount);
 };

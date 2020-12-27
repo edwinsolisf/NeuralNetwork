@@ -30,6 +30,9 @@
     <ClCompile Include="src\data_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\my_network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\stm\debug.h">
@@ -81,6 +84,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\static_neural_network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\my_network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\static_neural_network.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

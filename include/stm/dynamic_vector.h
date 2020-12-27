@@ -44,7 +44,7 @@ namespace stm
 		}
 
 		template<unsigned int dimensions>
-		dynamic_vector(const vector<_T, dimensions>& static_vector)
+		explicit dynamic_vector(const vector<_T, dimensions>& static_vector)
 			: _data(new _T[dimensions]), _dimensions(dimensions)
 		{
 			memcpy(_data, static_vector.GetData(), dimensions * sizeof(_T));
@@ -106,6 +106,13 @@ namespace stm
 				delete[] _data;
 				_data = newData;
 			}
+		}
+
+		dynamic_vector& SetAll(_T value)
+		{
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				_data[i] = value;
+			return *this;
 		}
 
 		dynamic_vector& ApplyToVector(_T(*func)(_T))
@@ -324,6 +331,7 @@ namespace stm
 				_data[i] = _data[i] / value;
 			return *this;
 		}
+
 		//Casting
 		template<typename O_TYPE>
 		dynamic_vector<O_TYPE> Cast() const
@@ -424,6 +432,15 @@ namespace stm
 		for (unsigned int i = 0; i < vec1.GetSize(); ++i)
 			sum += vec1[i] * vec2[i];
 		return sum;
+	}
+
+	template<typename _TYPE>
+	inline dynamic_vector<_TYPE> pow(const dynamic_vector<_TYPE>& vec, unsigned int power)
+	{
+		dynamic_vector<_TYPE> out = vec;
+		for (unsigned int i = 0; i < power; ++i)
+			out *= vec;
+		return out;
 	}
 
 	template<typename _TYPE>

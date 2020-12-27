@@ -1138,6 +1138,15 @@ namespace stm
         return vec / magnitude(vec);
     }
 
+	template<typename _TYPE, unsigned int _DIM>
+	inline vector<_TYPE, _DIM> pow(const vector<_TYPE, _DIM>& vec, unsigned int power)
+	{
+		vector<_TYPE, _DIM> out = vec;
+		for (unsigned int i = 0; i < power; ++i)
+			out *= vec;
+		return out;
+	}
+
 	typedef vector<int, 2> vec2i;
 	typedef vector<float, 2> vec2f;
 	typedef vector<int, 3> vec3i;

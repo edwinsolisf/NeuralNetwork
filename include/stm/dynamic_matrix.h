@@ -52,7 +52,7 @@ namespace stm
 		}
 
 		template<unsigned int rows, unsigned int columns>
-		dynamic_matrix(const matrix<_T, rows, columns>& static_matrix)
+		explicit dynamic_matrix(const matrix<_T, rows, columns>& static_matrix)
 			: _data(new _T[rows * columns]), _rows(rows), _columns(columns)
 		{
 			memcpy(_data, static_matrix.GetData(), _rows * _columns * sizeof(_T));
@@ -495,6 +495,13 @@ namespace stm
 			stm_assert(rows == _rows);
 			for (unsigned int i = 0; i < _rows; ++i)
 				(*this)[i][column] = vec[i];
+			return *this;
+		}
+
+		dynamic_matrix& SetAll(_T value)
+		{
+			for (unsigned int i = 0; i < GetSize(); ++i)
+				_data[i] = value;
 			return *this;
 		}
 

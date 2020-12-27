@@ -8,23 +8,30 @@
 #include "stm/utilities.h"
 #include "avxMath.h"
 
-static stm::dynamic_vector<float> quadratic_prime(const stm::dynamic_vector<float>& calculated, const stm::dynamic_vector<float>& expected)
+inline static stm::dynamic_vector<float> quadratic(const stm::dynamic_vector<float>& calculated, const stm::dynamic_vector<float>& expected)
 {
-	return std::move(calculated - expected);
+	return stm::pow((calculated - expected), 2);
 }
 
-NeuralNetwork::NeuralNetwork()
+inline static stm::dynamic_vector<float> quadratic_prime(const stm::dynamic_vector<float>& calculated, const stm::dynamic_vector<float>& expected)
+{
+	return calculated - expected;
+}
+
+using NN = NeuralNetwork;
+
+NN::NeuralNetwork()
 	:_inputData(nullptr), _outputData(nullptr),
 	_sampleBatch(0), _trainingSampleCount(0), _epochCount(0), _learningRate(0.0f), _momentum(0),
 	_inputCount(0), _outputCount(0), _layerCount(0), _neuronCount(0),
 	_inputWeights(1, 1), _inputBiases(1), _layersWeights(), _layersBiases(1, 1), _outputWeights(1, 1), _outputBiases(1),
 	_inputWeightsAdjust(1, 1), _inputBiasesAdjust(1), _layersWeightsAdjust(), _layersBiasesAdjust(1, 1), _outputWeightsAdjust(1, 1), 
-	_outputBiasesAdjust(1), _gpuAccelerated(false), _parallelProcessing(false), _multiBatch(false), Sigmoid(stm::logisticf), 
-	Sigmoid_Prime(stm::logistic_primef), Cost_Derivative(quadratic_prime)
+	_outputBiasesAdjust(1), _gpuAccelerated(false), _parallelProcessing(false), _multiBatch(false), _shuffling(true),
+	Sigmoid(stm::logisticf), Sigmoid_Prime(stm::logistic_primef), Cost(quadratic), Cost_Derivative(quadratic_prime)
 {
 }
 
-void NeuralNetwork::SetUpData(unsigned int samples, unsigned int inputs, unsigned int outputs, float* inputData, float* outputData)
+void NN::SetUpData(unsigned int samples, unsigned int inputs, unsigned int outputs, float* inputData, float* outputData)
 {
 	_inputCount = inputs;
 	_outputCount = outputs;
@@ -32,36 +39,30 @@ void NeuralNetwork::SetUpData(unsigned int samples, unsigned int inputs, unsigne
 	_outputData = new Data(outputs, samples, DATA_TYPE::OUTPUT, outputData);
 }
 
-void NeuralNetwork::SetUpInputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount))
+void NN::SetUpInputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount))
 {
 	delete _inputData;
 	_inputData = new Data(file, DATA_TYPE::INPUT, readfile);
 	_inputCount = _inputData->GetSampleSize();
 }
 
-void NeuralNetwork::SetUpOutputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount))
+void NN::SetUpOutputData(const std::string& file, float* (*readfile)(const char* filePath, unsigned int& sampleSize, unsigned int& sampleCount))
 {
 	delete _outputData;
 	_outputData = new Data(file, DATA_TYPE::OUTPUT, readfile);
 	_outputCount = _outputData->GetSampleSize();
 }
 
-void NeuralNetwork::SetUpTrainingConfiguration(unsigned int hiddedLayers, unsigned int neurons, unsigned int sampleBatch, unsigned int sampleCount, unsigned int epochs, float learningRate, float momentum)
+void NN::SetUpTrainingConfiguration(unsigned int hiddedLayers, unsigned int neurons, unsigned int sampleBatch, unsigned int sampleCount, unsigned int epochs, float learningRate, float momentum)
 {
 	_layerCount = hiddedLayers;
 	_neuronCount = neurons;
 	_sampleBatch = sampleBatch;
+	_multiBatch = sampleBatch - 1;
 	_trainingSampleCount = sampleCount;
 	_epochCount = epochs;
 	_learningRate = learningRate;
 	_momentum = momentum;
-
-	/*for (unsigned int i = 0; i < 10; ++i)
-	{
-		stm::dynamic_matrix<float> m(28, 28, _inputData->GetSample(i).GetData());
-		stm::Print(m);
-		std::cout << "\n\n";
-	}*/
 }
 
 //void NeuralNetwork::InitializeNetwork()
@@ -201,17 +202,14 @@ void NeuralNetwork::SetUpTrainingConfiguration(unsigned int hiddedLayers, unsign
 //	return out;
 //}
 
-
-/////////////////
-
-void NeuralNetwork::InitializeNetwork()
+void NN::InitializeNetwork()
 {
-	_inputWeights = std::move(stm::dynamic_matrix<float>(_neuronCount, _inputCount));
+	_inputWeights = InWeight_t(_neuronCount, _inputCount);
 	for (unsigned int i = 0; i < _inputWeights.GetSize(); ++i)
 		_inputWeights[0][i] = stm::normaldistr_randomf();
 	_inputWeights /= sqrtf(_inputCount);
 
-	_inputBiases = std::move(stm::dynamic_vector<float>(_neuronCount));
+	_inputBiases = InBias_t(_neuronCount);
 	for (unsigned int i = 0; i < _inputBiases.GetSize(); ++i)
 		_inputBiases[i] = stm::normaldistr_randomf();
 	_inputBiases /= sqrtf(_inputCount);
@@ -225,47 +223,40 @@ void NeuralNetwork::InitializeNetwork()
 		_layersWeights[j] /= sqrtf(_neuronCount);
 	}
 
-	_layersBiases = std::move(stm::dynamic_matrix<float>(_layerCount, _neuronCount));
+	_layersBiases = HidBiases_t(_layerCount, _neuronCount);
 	for (unsigned int i = 0; i < _layersBiases.GetSize(); ++i)
 		_layersBiases[0][i] = stm::normaldistr_randomf();
 	_layersBiases /= sqrtf(_neuronCount);
 
-	_outputWeights = std::move(stm::dynamic_matrix<float>(_outputCount, _neuronCount));
+	_outputWeights = OutWeight_t(_outputCount, _neuronCount);
 	for (unsigned int i = 0; i < _outputWeights.GetSize(); ++i)
 		_outputWeights[0][i] = stm::normaldistr_randomf();
 	_outputWeights /= sqrtf(_neuronCount);
 
-	_outputBiases = std::move(stm::dynamic_vector<float>(_outputCount));
+	_outputBiases = OutBias_t(_outputCount);
 	for (unsigned int i = 0; i < _outputBiases.GetSize(); ++i)
 		_outputBiases[i] = stm::normaldistr_randomf();
 	_outputWeights /= sqrtf(_neuronCount);
 
-	_inputWeightsAdjust = std::move(stm::dynamic_matrix<float>(_neuronCount, _inputCount));
-	_inputBiasesAdjust = std::move(stm::dynamic_vector<float>(_neuronCount));
+	_inputWeightsAdjust = InWeight_t(_neuronCount, _inputCount);
+	_inputBiasesAdjust = InBias_t(_neuronCount);
 	_layersWeightsAdjust.reserve(_layerCount);
 	for (unsigned int i = 0; i < _layerCount; ++i)
 		_layersWeightsAdjust.emplace_back(_neuronCount, _neuronCount);
-	_layersBiasesAdjust = std::move(stm::dynamic_matrix<float>(_layerCount, _neuronCount));
-	_outputWeightsAdjust = std::move(stm::dynamic_matrix<float>(_outputCount, _neuronCount));
-	_outputBiasesAdjust = std::move(stm::dynamic_vector<float>(_outputCount));
+	_layersBiasesAdjust = HidBiases_t(_layerCount, _neuronCount);
+	_outputWeightsAdjust = OutWeight_t(_outputCount, _neuronCount);
+	_outputBiasesAdjust = OutBias_t(_outputCount);
 }
 
-std::pair<stm::dynamic_vector<float>, stm::dynamic_vector<float>> NeuralNetwork::TestSample(unsigned int id)
+std::pair<NN::OutData_t, NN::OutData_t> NN::TestSample(unsigned int id)
 {
 	return std::make_pair(_outputData->GetSample(id), ProcessSample(_inputData->GetSample(id)));
 }
 
-stm::dynamic_vector<float> NeuralNetwork::ProcessSample(const stm::dynamic_vector<float>& inputData) const
+NN::OutData_t NN::ProcessSample(const InData_t& inputData) const
 {
 	//Input Layer
-	//for (unsigned int i = 0; i < 28; ++i)
-	//{
-	//	for (unsigned int j = 0; j < 28; ++j)
-	//		std::cout << (char)inputData[(i * 28) + j] << "  ";
-	//	std::cout << "\n";
-	//}
-
-	stm::dynamic_vector<float> vec = stm::multiply(_inputWeights, inputData) + _inputBiases;
+	auto vec = stm::multiply(_inputWeights, inputData) + _inputBiases;
 	vec.ApplyToVector(Sigmoid);
 
 	//Hidden Layers
@@ -276,7 +267,7 @@ stm::dynamic_vector<float> NeuralNetwork::ProcessSample(const stm::dynamic_vecto
 	}
 
 	//Output Layer
-	stm::dynamic_vector<float> out = stm::multiply(_outputWeights, vec) + _outputBiases;
+	auto out = stm::multiply(_outputWeights, vec) + _outputBiases;
 	out.ApplyToVector(Sigmoid);
 	return std::move(out);
 }
@@ -361,14 +352,14 @@ static std::mutex adjustLock;
 		threads.push_back(std::async(std::launch::async, func, i));
 }*/
 
-void NeuralNetwork::BackPropagate(const stm::dynamic_matrix<float>& input, const stm::dynamic_matrix<float>& output)
+void NN::BackPropagateBatch(const stm::dynamic_matrix<float>& input, const stm::dynamic_matrix<float>& output)
 {
 	std::vector<std::future<void>> threads;
 	for (unsigned int i = 0; i < _sampleBatch; ++i)
-		threads.push_back(std::async(std::launch::async, &NeuralNetwork::BackProp, this, input.GetColumnVector(i), output.GetColumnVector(i)));
+		threads.push_back(std::async(std::launch::async, &NN::BackPropagate, this, input.GetColumnVector(i), output.GetColumnVector(i)));
 }
 
-void NeuralNetwork::BackProp(const stm::dynamic_vector<float>& input, const stm::dynamic_vector<float>& output)
+void NN::BackPropagate(const InData_t& input, const OutData_t& output)
 {
 	stm::dynamic_matrix<float> aValues(_layerCount + 1, _neuronCount);
 	stm::dynamic_matrix<float> zValues(_layerCount + 1, _neuronCount);
@@ -392,24 +383,19 @@ void NeuralNetwork::BackProp(const stm::dynamic_vector<float>& input, const stm:
 			zValues.SetRowVector(i + 1, values);
 	}
 
-	stm::dynamic_vector<float> out = stm::multiply(_outputWeights, values) + _outputBiases;
-	stm::dynamic_vector<float> last_aValue = out;
+	OutData_t out = stm::multiply(_outputWeights, values) + _outputBiases;
+	OutData_t last_aValue = out;
+
 	out.ApplyToVector(Sigmoid);
-
-	//stm::dynamic_matrix<float> inputWeightsAdjust = stm::dynamic_matrix<float>(_neuronCount, _inputCount);
-	//stm::dynamic_vector<float> inputBiasesAdjust = stm::dynamic_vector<float>(_neuronCount);
-	std::vector<stm::dynamic_matrix<float>> layersWeightsAdjust(_layerCount, stm::dynamic_matrix<float>(_neuronCount, _neuronCount));
-	stm::dynamic_matrix<float> layersBiasesAdjust = stm::dynamic_matrix<float>(_layerCount, _neuronCount);
-	//stm::dynamic_matrix<float> outputWeightsAdjust = stm::dynamic_matrix<float>(_outputCount, _neuronCount);
-	//stm::dynamic_vector<float> outputBiasesAdjust = stm::dynamic_vector<float>(_outputCount);
-
+	last_aValue.ApplyToVector(Sigmoid_Prime);
 	aValues.ApplyToMatrix(Sigmoid_Prime);
-	stm::dynamic_vector<float> adjust = Cost_Derivative(out, output) * last_aValue.ApplyToVector(Sigmoid_Prime);
 
-	stm::dynamic_vector<float> outputBiasesAdjust = std::move(adjust);
-	stm::dynamic_matrix<float> outputWeightsAdjust = stm::multiply(stm::toColumnMatrix(outputBiasesAdjust), stm::toRowMatrix(zValues.GetRowVector(_layerCount)));
+	OutBias_t outputBiasesAdjust = Cost_Derivative(out, output) * last_aValue;
+	OutWeight_t outputWeightsAdjust = stm::multiply(stm::toColumnMatrix(outputBiasesAdjust), stm::toRowMatrix(zValues.GetRowVector(_layerCount)));
 
-	adjust = stm::multiply(_outputWeights.Transpose(), outputBiasesAdjust) * aValues.GetRowVector(_layerCount);
+	HidWeights_t layersWeightsAdjust(_layerCount, HidWeight_t(_neuronCount, _neuronCount));
+	HidBiases_t layersBiasesAdjust = HidBiases_t(_layerCount, _neuronCount);
+	HidBias_t adjust = stm::multiply(_outputWeights.Transpose(), outputBiasesAdjust) * aValues.GetRowVector(_layerCount);
 
 	layersBiasesAdjust.SetRowVector(_layerCount - 1, adjust);
 	layersWeightsAdjust[_layerCount - 1] = stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(zValues.GetRowVector(_layerCount - 1)));
@@ -422,8 +408,8 @@ void NeuralNetwork::BackProp(const stm::dynamic_vector<float>& input, const stm:
 	}
 
 	adjust = stm::multiply(_layersWeights[0].Transpose(), adjust) * aValues.GetRowVector(0);
-	stm::dynamic_vector<float> inputBiasesAdjust = std::move(adjust);
-	stm::dynamic_matrix<float> inputWeightsAdjust = stm::multiply(stm::toColumnMatrix(inputBiasesAdjust), stm::toRowMatrix(input));
+	InBias_t inputBiasesAdjust = std::move(adjust);
+	InWeight_t inputWeightsAdjust = stm::multiply(stm::toColumnMatrix(inputBiasesAdjust), stm::toRowMatrix(input));
 
 	std::lock_guard<std::mutex> guard(adjustLock);
 	_outputBiasesAdjust += outputBiasesAdjust;
@@ -433,10 +419,10 @@ void NeuralNetwork::BackProp(const stm::dynamic_vector<float>& input, const stm:
 		_layersWeightsAdjust[i] += layersWeightsAdjust[i];
 	_inputBiasesAdjust += inputBiasesAdjust;
 	_inputWeightsAdjust += inputWeightsAdjust;
-}// 
+}
 
-//
-void NeuralNetwork::AdjustNetwork()
+
+void NN::AdjustNetwork()
 {
 	_inputBiases -= _inputBiasesAdjust * (_learningRate / _sampleBatch);
 	_inputWeights -= _inputWeightsAdjust * (_learningRate / _sampleBatch);
@@ -446,17 +432,16 @@ void NeuralNetwork::AdjustNetwork()
 	_outputBiases -= _outputBiasesAdjust * (_learningRate / _sampleBatch);
 	_outputWeights -= _outputWeightsAdjust * (_learningRate / _sampleBatch);
 
-
-	_inputBiasesAdjust.ApplyToVector([](float) { return 0.0f; });
-	_inputWeightsAdjust.ApplyToMatrix([](float) { return 0.0f; });
-	_layersBiasesAdjust.ApplyToMatrix([](float) { return 0.0f; });
+	_inputBiasesAdjust.SetAll(0.0f);
+	_inputWeightsAdjust.SetAll(0.0f);
+	_layersBiasesAdjust.SetAll(0.0f);
 	for (unsigned int i = 0; i < _layerCount; ++i)
-		_layersWeightsAdjust[i].ApplyToMatrix([](float) { return 0.0f; });
-	_outputBiasesAdjust.ApplyToVector([](float) { return 0.0f; });
-	_outputWeightsAdjust.ApplyToMatrix([](float) { return 0.0f; });
+		_layersWeightsAdjust[i].SetAll(0.0f);
+	_outputBiasesAdjust.SetAll(0.0f);
+	_outputWeightsAdjust.SetAll(0.0f);
 }
 
-void NeuralNetwork::StartTraining()
+void NN::StartTraining()
 {
 	InitializeNetwork();
 	for (unsigned int i = 0; i < _epochCount; ++i)
@@ -465,15 +450,15 @@ void NeuralNetwork::StartTraining()
 		{
 			std::vector<unsigned int> batch = ShuffleData();
 			if (_multiBatch)
-				BackPropagate(_inputData->GetSampleBatch(batch), _outputData->GetSampleBatch(batch));
+				BackPropagateBatch(_inputData->GetSampleBatch(batch), _outputData->GetSampleBatch(batch));
 			else
-				BackPropagate(stm::toRowMatrix(_inputData->GetSample(j)), stm::toRowMatrix(_outputData->GetSample(j)));
+				BackPropagate(_inputData->GetSample(j), _outputData->GetSample(j));
 			AdjustNetwork();
 		}
 	}
 }
 
-std::vector<unsigned int> NeuralNetwork::ShuffleData()
+std::vector<unsigned int> NN::ShuffleData()
 {
 	std::vector<unsigned int> batch;
 	batch.reserve(_sampleBatch);
@@ -508,7 +493,7 @@ std::vector<unsigned int> NeuralNetwork::ShuffleData()
 //	//delete[] out;
 //}
 
-void NeuralNetwork::PrintNetworkValues()
+void NN::PrintNetworkValues()
 {
 	std::cout << "\n\ninputweights\n";
 	stm::Print(_inputWeights);
@@ -527,7 +512,7 @@ void NeuralNetwork::PrintNetworkValues()
 	stm::Print(_outputBiases);
 }
 
-NeuralNetwork::~NeuralNetwork()
+NN::~NeuralNetwork()
 {
 	delete _inputData;
 	delete _outputData;
