@@ -73,7 +73,7 @@ void SNN<TEMPLATE_ARGS>::StartTraining()
 			if (_multiBatch)
 				BackPropagateBatch(_inputData->GetSampleBatch(batch), _outputData->GetSampleBatch(batch));
 			else
-				BackPropagate(_inputData->GetSample(j).GetData(), _outputData->GetSample(j).GetData());
+				BackPropagate(_inputData->GetSampleData(j), _outputData->GetSampleData(j));
 			AdjustNetwork();
 		}
 	}
@@ -103,13 +103,13 @@ typename SNN<TEMPLATE_ARGS>::OutData_t SNN<TEMPLATE_ARGS>::ProcessSample(const I
 TEMPLATE_DEFINE
 inline std::pair<typename SNN<TEMPLATE_ARGS>::OutData_t, typename SNN<TEMPLATE_ARGS>::OutData_t> SNN<TEMPLATE_ARGS>::TestSample(unsigned int id) const
 {
-	return std::pair<OutData_t, OutData_t>(OutData_t(_outputData->GetSample(id).GetData()), ProcessSample(InData_t(_inputData->GetSample(id).GetData())));
+	return std::pair<OutData_t, OutData_t>(ProcessSample(InData_t(_inputData->GetSampleData(id))), OutData_t(_outputData->GetSampleData(id)));
 }
 
 TEMPLATE_DEFINE
 inline std::pair<typename SNN<TEMPLATE_ARGS>::InData_t, typename SNN<TEMPLATE_ARGS>::OutData_t> SNN<TEMPLATE_ARGS>::GetSampleData(unsigned int id)
 {
-	return std::pair<InData_t, OutData_t>(InData_t(_inputData->GetSample(id).GetData()), OutData_t(_outputData->GetSample(id).GetData()));
+	return std::pair<InData_t, OutData_t>(InData_t(_inputData->GetSampleData(id)), OutData_t(_outputData->GetSampleData(id)));
 }
 
 TEMPLATE_DEFINE

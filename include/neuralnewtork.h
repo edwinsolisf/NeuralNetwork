@@ -34,10 +34,8 @@ public:
 	using HidBiases_t	= stm::dynamic_matrix<float>;
 	using OutWeight_t	= stm::dynamic_matrix<float>;
 	using OutBias_t		= stm::dynamic_vector<float>;
-	
 
 	void PrintNetworkValues();
-
 
 	std::pair<OutData_t, OutData_t> TestSample(unsigned int id);
 	OutData_t ProcessSample(const InData_t& inputData) const;

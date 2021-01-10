@@ -65,143 +65,6 @@ void NN::SetUpTrainingConfiguration(unsigned int hiddedLayers, unsigned int neur
 	_momentum = momentum;
 }
 
-//void NeuralNetwork::InitializeNetwork()
-//{
-//	_inputWeights = std::move(stm::dynamic_matrix<float>(_inputCount, _neuronCount));
-//	for (unsigned int i = 0; i < _inputWeights.GetSize(); ++i)
-//		_inputWeights[0][i] = stm::normaldistr_randomf();
-//	_inputWeights /= sqrtf(_inputCount);
-//
-//	_inputBiases = std::move(stm::dynamic_vector<float>(_neuronCount));
-//	for (unsigned int i = 0; i < _inputBiases.GetSize(); ++i)
-//		_inputBiases[i] = stm::normaldistr_randomf();
-//	_inputBiases /= sqrtf(_inputCount);
-//
-//	_layersWeights.reserve(_layerCount);
-//	for (unsigned int j = 0; j < _layerCount; ++j)
-//	{
-//		_layersWeights.emplace_back(_neuronCount, _neuronCount);
-//		for (unsigned int i = 0; i < _layersWeights[j].GetSize(); ++i)
-//			_layersWeights[j][0][i] = stm::normaldistr_randomf();
-//		_layersWeights[j] /= sqrtf(_neuronCount);
-//	}
-//
-//	_layersBiases = std::move(stm::dynamic_matrix<float>(_layerCount, _neuronCount));
-//	for (unsigned int i = 0; i < _layersBiases.GetSize(); ++i)
-//		_layersBiases[0][i] = stm::normaldistr_randomf();
-//	_layersBiases /= sqrtf(_neuronCount);
-//
-//	_outputWeights = std::move(stm::dynamic_matrix<float>(_neuronCount, _outputCount));
-//	for (unsigned int i = 0; i < _outputWeights.GetSize(); ++i)
-//		_outputWeights[0][i] = stm::normaldistr_randomf();
-//	_outputWeights /= sqrtf(_neuronCount);
-//
-//	_outputBiases = std::move(stm::dynamic_vector<float>(_outputCount));
-//	for (unsigned int i = 0; i < _outputBiases.GetSize(); ++i)
-//		_outputBiases[i] = stm::normaldistr_randomf();
-//	_outputWeights /= sqrtf(_neuronCount);
-//
-//	_inputWeightsAdjust = std::move(stm::dynamic_matrix<float>(_inputCount, _neuronCount));
-//	_inputBiasesAdjust = std::move(stm::dynamic_vector<float>(_neuronCount));
-//	_layersWeightsAdjust.reserve(_layerCount);
-//	for (unsigned int i = 0; i < _layerCount; ++i)
-//		_layersWeightsAdjust.emplace_back(_neuronCount, _neuronCount);
-//	_layersBiasesAdjust = std::move(stm::dynamic_matrix<float>(_layerCount, _neuronCount));
-//	_outputWeightsAdjust = std::move(stm::dynamic_matrix<float>(_neuronCount, _outputCount));
-//	_outputBiasesAdjust = std::move(stm::dynamic_vector<float>(_outputCount));
-//}
-//
-//std::pair<stm::dynamic_vector<float>, stm::dynamic_vector<float>> NeuralNetwork::TestSample(unsigned int id)
-//{
-//	return std::make_pair(_outputData->GetSample(id), stm::toRowVector(BackPropagate(_inputData->GetSampleBatch(id, 1), _outputData->GetSampleBatch(id, 1))));
-//	//return std::make_pair(_outputData->GetSample(id), ProcessSample(_inputData->GetSample(id)));
-//}
-//
-//stm::dynamic_vector<float> NeuralNetwork::ProcessSample(const stm::dynamic_vector<float>& inputData) const
-//{
-//	//Input Layer
-//	stm::dynamic_vector<float> vec = stm::toRowVector(stm::multiply(stm::toRowMatrix(inputData), _inputWeights)) + _inputBiases;
-//	vec.ApplyToVector(Sigmoid);
-//	
-//	//Hidden Layers
-//	for (unsigned int i = 0; i < _layerCount; ++i)
-//	{
-//		vec = stm::multiply(_layersWeights[i], vec) + _layersBiases.GetRowVector(i);
-//		vec.ApplyToVector(Sigmoid);
-//	}
-//
-//	//Output Layer
-//	stm::dynamic_vector<float> out = stm::toRowVector(stm::multiply(stm::toRowMatrix(vec), _outputWeights)) + _outputBiases;
-//	out.ApplyToVector(Sigmoid);
-//	return std::move(out);
-//}
-//
-//stm::dynamic_matrix<float> NeuralNetwork::BackPropagate(const stm::dynamic_matrix<float>& input, const stm::dynamic_matrix<float>& output)
-//{
-//	//auto start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//	std::vector<stm::dynamic_matrix<float>> aValues(_sampleBatch, stm::dynamic_matrix<float>(_layerCount + 1, _neuronCount));
-//	std::vector<stm::dynamic_matrix<float>> zValues(_sampleBatch, stm::dynamic_matrix<float>(_layerCount + 1, _neuronCount));
-//	
-//	stm::dynamic_matrix<float> biases(_sampleBatch, _neuronCount);
-//	biases.SetAllRows(_inputBiases);
-//	stm::dynamic_matrix<float> values = stm::multiply(input, _inputWeights) + biases;
-//
-//	for (unsigned int n = 0; n < _sampleBatch; ++n)
-//		aValues[n].SetRowVector(0, values.GetRowVector(n));
-//	values.ApplyToMatrix(Sigmoid);
-//	for (unsigned int n = 0; n < _sampleBatch; ++n)
-//		zValues[n].SetRowVector(0, values.GetRowVector(n));
-//
-//	for (unsigned int i = 0; i < _layerCount; ++i)
-//	{
-//		biases.SetAllRows(_layersBiases.GetRowVector(i));
-//		values = stm::multiply(values, _layersWeights[i]) + biases;
-//
-//		for (unsigned int n = 0; n < _sampleBatch; ++n)
-//			aValues[n].SetRowVector(i + 1, values.GetRowVector(n));
-//		values.ApplyToMatrix(Sigmoid);
-//		for (unsigned int n = 0; n < _sampleBatch; ++n)
-//			zValues[n].SetRowVector(i + 1, values.GetRowVector(n));
-//	}
-//
-//	biases = stm::dynamic_matrix<float>(_sampleBatch, _outputCount);
-//	biases.SetAllRows(_outputBiases);
-//	stm::dynamic_matrix<float> out = stm::multiply(values, _outputWeights) + biases;
-//	stm::dynamic_matrix<float> last_aValue = out;
-//	out.ApplyToMatrix(Sigmoid);
-//
-//	//auto end = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//	//std::cout << end - start << "ns\n";
-//
-//	//start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//	for (unsigned int n = 0; n < _sampleBatch; ++n)
-//	{
-//		stm::dynamic_vector<float> adjust = Cost_Derivative(out.GetRowVector(n), output.GetRowVector(n)) * last_aValue.GetRowVector(n).ApplyToVector(Sigmoid_Prime);
-//
-//		_outputBiasesAdjust += adjust;
-//
-//		_outputWeightsAdjust += stm::multiply(stm::toColumnMatrix(zValues[n].GetRowVector(_layerCount)), stm::toRowMatrix(adjust));
-//
-//		adjust = stm::multiply(_outputWeights, adjust) * aValues[n].GetRowVector(_layerCount).ApplyToVector(Sigmoid_Prime);
-//		_layersBiasesAdjust.SetRowVector(_layerCount - 1, adjust + _layersBiasesAdjust.GetRowVector(_layerCount - 1 ));
-//		_layersWeightsAdjust[_layerCount - 1] += stm::multiply(stm::toColumnMatrix(zValues[n].GetRowVector(_layerCount - 1)), stm::toRowMatrix(adjust));
-//
-//		for (unsigned int i = 1; i < _layerCount; ++i)
-//		{
-//			adjust = stm::multiply(_layersWeights[_layerCount - i], adjust) * aValues[n].GetRowVector(_layerCount - i).ApplyToVector(Sigmoid_Prime);
-//			_layersBiasesAdjust.SetRowVector(_layerCount - 1 - i, adjust + _layersBiasesAdjust.GetRowVector(_layerCount - 1 - i));
-//			_layersWeightsAdjust[_layerCount - 1 - i] += stm::multiply(stm::toColumnMatrix(zValues[n].GetRowVector(_layerCount - 1 - i)), stm::toRowMatrix(adjust));
-//		}
-//
-//		adjust = stm::multiply(_layersWeights[0], adjust) * aValues[n].GetRowVector(0).ApplyToVector(Sigmoid_Prime);
-//		_inputBiasesAdjust += adjust;
-//		_inputWeightsAdjust += stm::multiply(stm::toColumnMatrix(input.GetRowVector(n)), stm::toRowMatrix(adjust));
-//	}
-//	//end = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-//	//std::cout << end - start << "ns\n";
-//	return out;
-//}
-
 void NN::InitializeNetwork()
 {
 	_inputWeights = InWeight_t(_neuronCount, _inputCount);
@@ -269,88 +132,9 @@ NN::OutData_t NN::ProcessSample(const InData_t& inputData) const
 	//Output Layer
 	auto out = stm::multiply(_outputWeights, vec) + _outputBiases;
 	out.ApplyToVector(Sigmoid);
-	return std::move(out);
+	return out;
 }
 
-static std::mutex adjustLock;
-
-/*void NeuralNetwork::BackPropagate(const stm::dynamic_matrix<float>& input, const stm::dynamic_matrix<float>& output)
-{
-	std::vector<stm::dynamic_matrix<float>> aValues(_sampleBatch, stm::dynamic_matrix<float>(_layerCount + 1, _neuronCount));
-	std::vector<stm::dynamic_matrix<float>> zValues(_sampleBatch, stm::dynamic_matrix<float>(_layerCount + 1, _neuronCount));
-
-	stm::dynamic_matrix<float> biases(_neuronCount, _sampleBatch);
-	biases.SetAllColumns(_inputBiases);
-	stm::dynamic_matrix<float> values = stm::multiply(_inputWeights, input) + biases;
-
-	for (unsigned int n = 0; n < _sampleBatch; ++n)
-		aValues[n].SetRowVector(0, values.GetColumnVector(n));
-	values.ApplyToMatrix(Sigmoid);
-	for (unsigned int n = 0; n < _sampleBatch; ++n)
-		zValues[n].SetRowVector(0, values.GetColumnVector(n));
-
-	for (unsigned int i = 0; i < _layerCount; ++i)
-	{
-		biases.SetAllColumns(_layersBiases.GetRowVector(i));
-		values = stm::multiply(_layersWeights[i], values) + biases;
-
-		for (unsigned int n = 0; n < _sampleBatch; ++n)
-			aValues[n].SetRowVector(i + 1, values.GetColumnVector(n));
-		values.ApplyToMatrix(Sigmoid);
-		for (unsigned int n = 0; n < _sampleBatch; ++n)
-			zValues[n].SetRowVector(i + 1, values.GetColumnVector(n));
-	}
-
-	biases = stm::dynamic_matrix<float>(_outputCount, _sampleBatch);
-	biases.SetAllColumns(_outputBiases);
-	stm::dynamic_matrix<float> out = stm::multiply(_outputWeights, values) + biases;
-	stm::dynamic_matrix<float> last_aValue = out;
-	out.ApplyToMatrix(Sigmoid);
-	
-	auto func = [&](unsigned int n)
-	{
-		stm::dynamic_matrix<float> inputWeightsAdjust = stm::dynamic_matrix<float>(_neuronCount, _inputCount);
-		stm::dynamic_vector<float> inputBiasesAdjust = stm::dynamic_vector<float>(_neuronCount);
-		std::vector<stm::dynamic_matrix<float>> layersWeightsAdjust(_layerCount, stm::dynamic_matrix<float>(_neuronCount, _neuronCount));
-		stm::dynamic_matrix<float> layersBiasesAdjust = stm::dynamic_matrix<float>(_layerCount, _neuronCount);
-		stm::dynamic_matrix<float> outputWeightsAdjust = stm::dynamic_matrix<float>(_outputCount, _neuronCount);
-		stm::dynamic_vector<float> outputBiasesAdjust = stm::dynamic_vector<float>(_outputCount);
-
-		stm::dynamic_vector<float> adjust = Cost_Derivative(out.GetColumnVector(n), output.GetColumnVector(n)) * last_aValue.GetColumnVector(n).ApplyToVector(Sigmoid_Prime);
-
-		outputBiasesAdjust += adjust;
-
-		outputWeightsAdjust += stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(zValues[n].GetRowVector(_layerCount)));
-
-		adjust = stm::multiply(_outputWeights.Transpose(), adjust) * aValues[n].GetRowVector(_layerCount).ApplyToVector(Sigmoid_Prime);
-		layersBiasesAdjust.SetRowVector(_layerCount - 1, adjust + layersBiasesAdjust.GetRowVector(_layerCount - 1));
-		layersWeightsAdjust[_layerCount - 1] += stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(zValues[n].GetRowVector(_layerCount - 1)));
-
-		for (unsigned int i = 1; i < _layerCount; ++i)
-		{
-			adjust = stm::multiply(_layersWeights[_layerCount - i].Transpose(), adjust) * aValues[n].GetRowVector(_layerCount - i).ApplyToVector(Sigmoid_Prime);
-			layersBiasesAdjust.SetRowVector(_layerCount - 1 - i, adjust + layersBiasesAdjust.GetRowVector(_layerCount - 1 - i));
-			layersWeightsAdjust[_layerCount - 1 - i] += stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(zValues[n].GetRowVector(_layerCount - 1 - i)));
-		}
-
-		adjust = stm::multiply(_layersWeights[0].Transpose(), adjust) * aValues[n].GetRowVector(0).ApplyToVector(Sigmoid_Prime);
-		inputBiasesAdjust += adjust;
-		inputWeightsAdjust += stm::multiply(stm::toColumnMatrix(adjust), stm::toRowMatrix(input.GetColumnVector(n)));
-
-		std::lock_guard<std::mutex> guard(adjustLock);
-		_outputBiasesAdjust += outputBiasesAdjust;
-		_outputWeightsAdjust += outputWeightsAdjust;
-		_layersBiasesAdjust += layersBiasesAdjust;
-		for (unsigned int i = 0; i < _layerCount; ++i)
-			_layersWeightsAdjust[i] += layersWeightsAdjust[i];
-		_inputBiasesAdjust += inputBiasesAdjust;
-		_inputWeightsAdjust += inputWeightsAdjust;
-	};
-
-	std::vector<std::future<void>> threads;
-	for(unsigned int i = 0; i < _sampleBatch; ++i)
-		threads.push_back(std::async(std::launch::async, func, i));
-}*/
 
 void NN::BackPropagateBatch(const stm::dynamic_matrix<float>& input, const stm::dynamic_matrix<float>& output)
 {
@@ -358,6 +142,8 @@ void NN::BackPropagateBatch(const stm::dynamic_matrix<float>& input, const stm::
 	for (unsigned int i = 0; i < _sampleBatch; ++i)
 		threads.push_back(std::async(std::launch::async, &NN::BackPropagate, this, input.GetColumnVector(i), output.GetColumnVector(i)));
 }
+
+static std::mutex adjustLock;
 
 void NN::BackPropagate(const InData_t& input, const OutData_t& output)
 {

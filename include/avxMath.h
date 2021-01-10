@@ -5,6 +5,7 @@
 #include "stm/vector.h"
 #include "stm/dynamic_matrix.h"
 #include "stm/dynamic_vector.h"
+#include "stm/aligned_matrix.h"
 #include <immintrin.h>
 #include <memory>
 #include <chrono>
@@ -477,6 +478,94 @@ namespace avx
 		}
 
 		return out;
+	}
+
+	inline static __m256 _loadValues256(const stm::aligned_matrix<float>& m, unsigned int index)
+	{
+		return _mm256_loadu_ps(&m.getData()[index * 8]);
+	}
+
+	inline static void _storeValues256(const __m256& values, stm::aligned_matrix<float>& m, unsigned int index)
+	{
+		memcpy(&m.getData()[index * 8], &values, 8 * sizeof(float));
+	}
+	inline static void _storeValues256(const __m256& values, stm::aligned_matrix<float>& m, unsigned int index, unsigned int count)
+	{
+		memcpy(&m.getData()[index * 8], &values, count * sizeof(float));
+	}
+
+	inline static stm::aligned_matrix<float> add(const stm::aligned_matrix<float>& m1, const stm::aligned_matrix<float>& m2)
+	{
+		stm_assert(m1.getRowCount() == m2.getRowCount() && m1.getColumnCount() == m2.getColumnCount());
+		stm::aligned_matrix<float> temp(m1.getRowCount(), m1.getColumnCount());
+
+		for(unsigned int i = 0; i < m1.getGoodSize() / 8; ++i)
+			_storeValues256(_mm256_add_ps(_loadValues256(m1, i), _loadValues256(m2, i)), temp, i);
+
+		return temp;
+	}
+
+	inline static __m128 _loadValues128(const stm::aligned_matrix<float>& m, unsigned int index)
+	{
+		return _mm_loadu_ps(&m.getData()[index * 4]);
+	}
+
+	inline static void _storeValues128(const __m128& values, stm::aligned_matrix<float>& m, unsigned int index)
+	{
+		memcpy(&m.getData()[index * 4], &values, 4 * sizeof(float));
+	}
+
+	static stm::aligned_matrix<float> multiply(const stm::aligned_matrix<float>& m1, const stm::aligned_matrix<float>& m2)
+	{
+		stm_assert(m1.getColumnCount() == m2.getRowCount());
+		stm::aligned_matrix<float> temp(m1.getRowCount(), m2.getColumnCount());
+
+		for (unsigned int i = 0; i < m1.getRowCount(); ++i)
+		{
+			for (unsigned int j = 0; j < m1.getColumnCount(); ++j)
+			{
+				__m128 val = _mm_set1_ps(m1[i][j]);
+				const unsigned int x = m2.getGoodColumnCount() / 4;
+				const unsigned int y = x * j;
+				const unsigned int z = x * i;
+				for (unsigned int k = 0; k < x; ++k)
+					_storeValues128(_mm_fmadd_ps(_loadValues128(m2, k + y), val, _loadValues128(temp, k + z)), temp, k + z);
+			}
+		}
+		return temp;
+	}
+
+	inline static __m256 _loadDataFromPtr(const float* data, unsigned int offset)
+	{
+		return _mm256_loadu_ps(data + offset);
+	}
+
+	inline static void _storeDataToPtr(const __m256& regis, float* data, unsigned int offset, unsigned int count)
+	{
+		memcpy(data + offset, &regis, count * sizeof(float));
+	}
+
+	static stm::aligned_matrix<float> multiply256(const stm::aligned_matrix<float>& m1, const stm::aligned_matrix<float>& m2)
+	{
+		stm_assert(m1.getColumnCount() == m2.getRowCount());
+		stm::aligned_matrix<float> temp(m1.getRowCount(), m2.getColumnCount());
+
+		for (unsigned int i = 0; i < m1.getRowCount(); ++i)
+		{
+			for (unsigned int j = 0; j < m1.getColumnCount(); ++j)
+			{
+				__m256 val = _mm256_set1_ps(m1[i][j]);
+				const unsigned int x = m2.getGoodColumnCount() / 8;
+				const unsigned int t = x * 8;
+				const unsigned int y = x * j;
+				const unsigned int z = x * i;
+				const unsigned int delta = m2.getGoodColumnCount() - t;
+				for (unsigned int k = 0; k < x; ++k)
+					_storeValues256(_mm256_fmadd_ps(_loadValues256(m2, k + y), val, _loadValues256(temp, k + z)), temp, k + z);
+				_storeDataToPtr(_mm256_fmadd_ps(_loadDataFromPtr(m2[j], t), val, _loadDataFromPtr(temp[i], t)), temp[i], t, delta);
+			}
+		}
+		return temp;
 	}
 }
 #endif /* avx_math_h */

@@ -7,4 +7,6 @@ void neuralstatic();
 void Test();
 void TestStatic();
 
+void reverseneural();
+
 #endif /* my_network_h */

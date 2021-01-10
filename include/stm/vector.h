@@ -38,6 +38,12 @@ namespace stm
 			memcpy(_data, other._data, _DIM * sizeof(_TYPE));
 		}
 
+		vector(std::initializer_list<_TYPE> list)
+		{
+			static_assert(list.size() == GetSize());
+			std::copy(list.begin(), list.end(), _data);
+		}
+
 		vector& operator=(const dynamic_vector<_TYPE>& vec)
 		{
 			stm_assert(_DIM == vec.GetSize());
@@ -75,7 +81,7 @@ namespace stm
 		{
 			vector<O_TYPE, _DIM> temp;
 			for (unsigned int i = 0; i < _DIM; ++i)
-				temp._data[i] = O_TYPE(_data[i]);
+				temp[i] = O_TYPE(_data[i]);
 			return temp;
 		}
 
@@ -1142,7 +1148,7 @@ namespace stm
 	inline vector<_TYPE, _DIM> pow(const vector<_TYPE, _DIM>& vec, unsigned int power)
 	{
 		vector<_TYPE, _DIM> out = vec;
-		for (unsigned int i = 0; i < power; ++i)
+		for (unsigned int i = 0; i < (power - 1); ++i)
 			out *= vec;
 		return out;
 	}

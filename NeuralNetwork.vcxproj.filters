@@ -92,6 +92,15 @@
     <ClInclude Include="include\static_neural_network.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\stm\aligned_matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\dynamic_matrix.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\dynamic_vector.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\data\train-images.idx3-ubyte" />

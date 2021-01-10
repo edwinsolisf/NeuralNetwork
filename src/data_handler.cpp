@@ -20,19 +20,12 @@ Data::~Data()
 	delete[] _data;
 }
 
-stm::dynamic_vector<float> Data::GetSample(unsigned int id) const
-{
-	stm_assert(id < _sampleCount);
-	return std::move(stm::dynamic_vector<float>(_sampleSize, &_data[id * _sampleSize]));
-}
-
 stm::dynamic_matrix<float> Data::GetSampleBatch(const std::vector<unsigned int>& batchIds) const
 {
 	stm::dynamic_matrix<float> batch(_sampleSize, batchIds.size());
 	for (unsigned int i = 0; i < batchIds.size(); ++i)
 		batch.SetColumnVector(i, stm::dynamic_vector<float>(_sampleSize, &_data[batchIds[i] * _sampleSize]));
 	return batch;
-	//return std::move(stm::dynamic_matrix<float>(size, _sampleSize, &_data[_sampleSize * batch * size]));
 }
 
 void Data::SetNewData(float* data)

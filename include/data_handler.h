@@ -18,9 +18,9 @@ public:
 	Data(unsigned int sampleSize, unsigned int sampleCount, DATA_TYPE type, const float* data);
 	~Data();
 	
-	stm::dynamic_vector<float> GetSample(unsigned int id) const;
+	inline const float* GetSampleData(unsigned int id) const { return &_data[id * _sampleSize]; }
+	inline stm::vec_f GetSample(unsigned int id) const { stm_assert(id < _sampleCount); return stm::vec_f(_sampleSize, GetSampleData(id)); }
 	stm::dynamic_matrix<float> GetSampleBatch(const std::vector<unsigned int>& batchIds) const;
-
 	unsigned int GetSampleSize() const { return _sampleSize; }
 	unsigned int GetSampleCount() const { return _sampleCount; }
 

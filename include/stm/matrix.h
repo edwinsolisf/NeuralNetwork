@@ -39,6 +39,12 @@ namespace stm
 			memcpy(_data, other._data, GetSize() * sizeof(_TYPE));
 		}
 
+		matrix(std::initializer_list<_TYPE> list)
+		{
+			static_assert(list.size() == GetSize());
+			std::copy(list.begin(), list.end(), _data);
+		}
+
 		//Assigment Operators
 		matrix& operator=(const dynamic_matrix<_TYPE>& mat)
 		{
@@ -323,6 +329,21 @@ namespace stm
 					for (unsigned int k = 0; k < _COLUMNS; ++k)
 						sum += (*this)[i][k] * mat[k][j];
 					temp._data[(i * O_COLUMNS) + j] = sum;
+				}
+			}
+			return temp;
+		}
+
+		template<unsigned int O_COLUMNS>
+		matrix<_TYPE, _ROWS, O_COLUMNS> mult(const matrix<_TYPE, _COLUMNS, O_COLUMNS>& mat) const
+		{
+			matrix<_TYPE, _ROWS, O_COLUMNS> temp;
+			for (unsigned int i = 0; i < _ROWS; ++i)
+			{
+				for (unsigned int j = 0; j < _COLUMNS; ++j)
+				{
+					for (unsigned int k = 0; k < O_COLUMNS; ++k)
+						temp[i][k] += (*this)[i][j] * mat[j][k];
 				}
 			}
 			return temp;

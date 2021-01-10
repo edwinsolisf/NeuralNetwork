@@ -38,9 +38,10 @@ public:
 	using OutWeight_t	= stm::matrix<float, _OUTPUTS, _NEURONS>;
 	using OutBias_t		= stm::vector<float, _OUTPUTS>;
 
-	OutData_t ProcessSample(const InData_t& inputData) const;
 	std::pair<OutData_t, OutData_t> TestSample(unsigned int id) const;
 	std::pair<InData_t, OutData_t> GetSampleData(unsigned int id);
+	OutData_t ProcessSample(const InData_t& inputData) const;
+	inline OutData_t GetCost(unsigned int id) const { const auto& sample = TestSample(id);  return Cost(sample.first, sample.second); }
 	void PrintNetworkValues();
 
 	inline constexpr unsigned int GetInputCount()	const { return _INPUTS; }
