@@ -17,6 +17,7 @@ namespace stm
 		dynamic_matrix(unsigned int rows, unsigned int columns, const _T* data);
 		dynamic_matrix(unsigned int rows, unsigned int columns, _T value);
 		dynamic_matrix(unsigned int rows, unsigned int columns, std::initializer_list<_T> list);
+		dynamic_matrix(unsigned int rows, unsigned int columns, std::initializer_list<std::initializer_list<_T>> list);
 		dynamic_matrix(const dynamic_matrix& other);
 		dynamic_matrix(dynamic_matrix&& other) noexcept;
 		dynamic_matrix(_T*& data, unsigned int rows, unsigned int columns);

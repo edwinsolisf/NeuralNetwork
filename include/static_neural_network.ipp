@@ -4,6 +4,7 @@
 #include "stm/function.h"
 #include "stm/distribution.h"
 #include "stm/utilities.h"
+#include "stm/avx_math.h"
 
 #define TEMPLATE_DEFINE template<unsigned int _INPUTS, unsigned int _OUTPUTS, unsigned int _LAYERS, unsigned int _NEURONS>
 #define TEMPLATE_ARGS _INPUTS, _OUTPUTS, _LAYERS, _NEURONS
@@ -15,7 +16,7 @@ TEMPLATE_DEFINE
 SNN<TEMPLATE_ARGS>::StaticNeuralNetwork()
 	:_inputData(nullptr), _outputData(nullptr),
 	_sampleBatch(0), _trainingSampleCount(0), _epochCount(0), _learningRate(1.0f), _momentum(1.0f),
-	_gpuAccelerated(false), _parallelProcessing(false), _multiBatch(false), _shuffling(true),
+	_gpuAccelerated(false), _parallelProcessing(false), _multiBatch(false), _shuffling(true), _resume(false),
 	_inputWeights(), _inputBiases(), _layersWeights(), _layersBiases(), _outputWeights(), _outputBiases(),
 	_inputWeightsAdjust(), _inputBiasesAdjust(), _layersWeightsAdjust(), _layersBiasesAdjust(), _outputWeightsAdjust(),
 	_outputBiasesAdjust(), Sigmoid(stm::logisticf), Sigmoid_Prime(stm::logistic_primef), Cost(quadratic), Cost_Derivative(quadratic_prime)
@@ -64,14 +65,18 @@ void SNN<TEMPLATE_ARGS>::SetUpTrainingConfiguration(unsigned int sampleBatch, un
 TEMPLATE_DEFINE
 void SNN<TEMPLATE_ARGS>::StartTraining()
 {
-	InitializeNetwork();
+	if (!_resume)
+		InitializeNetwork();
+
 	for (unsigned int i = 0; i < _epochCount; ++i)
 	{
 		for (unsigned int j = 0; j < _trainingSampleCount / _sampleBatch; ++j)
 		{
-			std::vector<unsigned int> batch = ShuffleData();
 			if (_multiBatch)
+			{
+				std::vector<unsigned int> batch = ShuffleData();
 				BackPropagateBatch(_inputData->GetSampleBatch(batch), _outputData->GetSampleBatch(batch));
+			}
 			else
 				BackPropagate(_inputData->GetSampleData(j), _outputData->GetSampleData(j));
 			AdjustNetwork();
@@ -154,31 +159,32 @@ void SNN<TEMPLATE_ARGS>::InitializeNetwork()
 {
 	for (unsigned int i = 0; i < _inputWeights.GetSize(); ++i)
 		_inputWeights[0][i] = stm::normaldistr_randomf();
-	_inputWeights /= sqrtf(_INPUTS);
+	//_inputWeights /= sqrtf(_INPUTS);
 
-	for (unsigned int i = 0; i < _inputBiases.GetSize(); ++i)
-		_inputBiases[i] = stm::normaldistr_randomf();
-	_inputBiases /= sqrtf(_INPUTS);
+	//for (unsigned int i = 0; i < _inputBiases.GetSize(); ++i)
+	//	_inputBiases[i] = stm::normaldistr_randomf();
+	//_inputBiases /= sqrtf(_INPUTS);
 
 	for (unsigned int j = 0; j < _LAYERS; ++j)
 	{
 		for (unsigned int i = 0; i < _layersWeights[j].GetSize(); ++i)
 			_layersWeights[j][0][i] = stm::normaldistr_randomf();
-		_layersWeights[j] /= sqrtf(_NEURONS);
+		//_layersWeights[j] /= sqrtf(_NEURONS);
 	}
 
 	for (unsigned int i = 0; i < _layersBiases.GetSize(); ++i)
 		_layersBiases[0][i] = stm::normaldistr_randomf();
-	_layersBiases /= sqrtf(_NEURONS);
+	//_layersBiases /= sqrtf(_NEURONS);
 
 	for (unsigned int i = 0; i < _outputWeights.GetSize(); ++i)
 		_outputWeights[0][i] = stm::normaldistr_randomf();
-	_outputWeights /= sqrtf(_NEURONS);
+	//_outputWeights /= sqrtf(_NEURONS);
 
 	for (unsigned int i = 0; i < _outputBiases.GetSize(); ++i)
 		_outputBiases[i] = stm::normaldistr_randomf();
-	_outputWeights /= sqrtf(_NEURONS);
+	//_outputWeights /= sqrtf(_NEURONS);
 
+	_resume = true;
 }
 
 TEMPLATE_DEFINE
@@ -195,7 +201,7 @@ void SNN<TEMPLATE_ARGS>::BackPropagate(const InData_t& input, const OutData_t& o
 	stm::matrix<float, _LAYERS + 1, _NEURONS> aValues;
 	stm::matrix<float, _LAYERS + 1, _NEURONS> zValues;
 
-	stm::vector<float, _NEURONS> vec = avx::multiply256(_inputWeights, input) + _inputBiases;
+	stm::vector<float, _NEURONS> vec = stm::avx::multiply256(_inputWeights, input) + _inputBiases;
 	//stm::vector<float, _NEURONS> vec = stm::multiply(_inputWeights, input) + _inputBiases;
 
 	for (unsigned int n = 0; n < _sampleBatch; ++n)

@@ -80,9 +80,6 @@
     <ClInclude Include="include\stm\function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\avxMath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\static_neural_network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -99,6 +96,33 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\stm\dynamic_vector.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\matrix.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\utilities.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\vector.ipp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\vector4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\vector3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\vector2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\matrix2x2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\avx_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stm\avx_math.ipp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

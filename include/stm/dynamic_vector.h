@@ -206,9 +206,9 @@ namespace stm
 	inline dynamic_vector<_TYPE> normalize(const dynamic_vector<_TYPE>& vec) { return vec / magnitude(vec); }
 	template<typename _TYPE>
 	inline dynamic_vector<_TYPE> normalize(dynamic_vector<_TYPE>&& vec) { return std::move(vec / magnitude(vec)); }
+
 	typedef dynamic_vector<float> vec_f;
 	typedef dynamic_vector<int> vec_i;
-
 }
 
 #include "dynamic_vector.ipp"

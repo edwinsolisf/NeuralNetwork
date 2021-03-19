@@ -33,6 +33,15 @@ namespace stm
 	}
 
 	template<typename _T>
+	dynamic_matrix<_T>::dynamic_matrix(unsigned int rows, unsigned int columns, std::initializer_list<std::initializer_list<_T>> list)
+		:_data(new _T[rows * columns]), _rows(rows), _columns(columns)
+	{
+		stm_assert(rows != 0 && columns != 0 && list.size() == rows && list.begin()->size() == columns);
+		for (unsigned int i = 0; i < rows; ++i)
+			std::copy(list.begin()[i].begin(), list.begin()[i].end(), &_data[i * columns]);
+	}
+
+	template<typename _T>
 	dynamic_matrix<_T>::dynamic_matrix(const dynamic_matrix& other)
 		:_data(new _T[other._rows * other._columns]), _rows(other._rows), _columns(other._columns)
 	{
@@ -55,7 +64,7 @@ namespace stm
 	dynamic_matrix<_T>::dynamic_matrix(_T*& data, unsigned int rows, unsigned int columns)
 		:_data(std::exchange(data, nullptr)), _rows(rows), _columns(columns)
 	{
-		stm_assert(_data != nulltpr);
+		stm_assert(_data != nullptr);
 	}
 
 	template<typename _T> template<unsigned int rows, unsigned int columns>

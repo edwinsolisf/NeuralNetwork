@@ -9,7 +9,7 @@
 
 #include "static_neural_network.h"
 #include "neuralnewtork.h"
-#include "avxMath.h"
+//#include "stm/avx_math.h"
 
 
 static float* ReadInputFile(const char* filepath, unsigned int& size, unsigned int& count);
@@ -42,7 +42,7 @@ void neural()
 		//For 1 batch, learning rate = 0.5f
 		//For 4 batch, learning rate = 0.75f
 		//For 8 batch, learning rate = 0.95f
-		nn.SetUpTrainingConfiguration(1, 30, 10, 60000, 1, 1.5f, 0.9f);
+		nn.SetUpTrainingConfiguration(1, 30, 10, 50000, 1, 1.5f, 0.9f);
 		
 		auto start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		nn.StartTraining();
@@ -69,7 +69,7 @@ void neural()
 
 void neuralstatic()
 {
-	using Network = StaticNeuralNetwork<784, 10, 2, 16>;
+	using Network = StaticNeuralNetwork<784, 10, 1, 64>;
 	Network& nn = *new Network;
 
 	nn.SetUpInputData("assets/data/train-images.idx3-ubyte", ReadInputFile);
@@ -108,12 +108,14 @@ void neuralstatic()
 	}*/
 
 	unsigned int offset = 50000;
-	nn.SetUpTrainingConfiguration(1, 50000 , 1, 0.5f, 0.9f);
+	nn.SetUpTrainingConfiguration(10, 50000 , 1, 3.0f, 1.0f);
 	for (unsigned int i = 1; i < 500; ++i)
 	{
-
+		auto start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
 		nn.StartTraining();
-		std::cout << "\n\nEpoch: " << i << "\n";
+		auto end = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		std::cout << "\n\nEpoch: " << i << "\n" << "Time: " << (end - start) / 1000000.0f << "\n";
+
 		for (unsigned int j = 0; j < 10; ++j)
 		{
 			auto sample = nn.TestSample(j);

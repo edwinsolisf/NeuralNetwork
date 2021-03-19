@@ -65,6 +65,7 @@ private:
 	bool _parallelProcessing;
 	bool _multiBatch;
 	bool _shuffling;
+	bool _resume;
 
 	unsigned int _inputCount;
 	unsigned int _outputCount;

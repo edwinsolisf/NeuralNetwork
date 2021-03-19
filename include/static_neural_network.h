@@ -8,7 +8,6 @@
 #include "data_handler.h"
 #include "stm/vector.h"
 #include "stm/matrix.h"
-#include "avxMath.h"
 
 template<unsigned int _INPUTS, unsigned int _OUTPUTS, unsigned int _LAYERS, unsigned int _NEURONS>
 class StaticNeuralNetwork
@@ -78,6 +77,7 @@ private:
 	bool _parallelProcessing;
 	bool _multiBatch;
 	bool _shuffling;
+	bool _resume;
 
 	InWeight_t		_inputWeights;
 	InBias_t		_inputBiases;

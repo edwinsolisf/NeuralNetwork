@@ -6,7 +6,7 @@
 #include "stm/distribution.h"
 #include "stm/function.h"
 #include "stm/utilities.h"
-#include "avxMath.h"
+#include "stm/avx_math.h"
 
 inline static stm::dynamic_vector<float> quadratic(const stm::dynamic_vector<float>& calculated, const stm::dynamic_vector<float>& expected)
 {
@@ -26,7 +26,7 @@ NN::NeuralNetwork()
 	_inputCount(0), _outputCount(0), _layerCount(0), _neuronCount(0),
 	_inputWeights(1, 1), _inputBiases(1), _layersWeights(), _layersBiases(1, 1), _outputWeights(1, 1), _outputBiases(1),
 	_inputWeightsAdjust(1, 1), _inputBiasesAdjust(1), _layersWeightsAdjust(), _layersBiasesAdjust(1, 1), _outputWeightsAdjust(1, 1), 
-	_outputBiasesAdjust(1), _gpuAccelerated(false), _parallelProcessing(false), _multiBatch(false), _shuffling(true),
+	_outputBiasesAdjust(1), _gpuAccelerated(false), _parallelProcessing(false), _multiBatch(false), _shuffling(true), _resume(false),
 	Sigmoid(stm::logisticf), Sigmoid_Prime(stm::logistic_primef), Cost(quadratic), Cost_Derivative(quadratic_prime)
 {
 }
@@ -70,12 +70,12 @@ void NN::InitializeNetwork()
 	_inputWeights = InWeight_t(_neuronCount, _inputCount);
 	for (unsigned int i = 0; i < _inputWeights.GetSize(); ++i)
 		_inputWeights[0][i] = stm::normaldistr_randomf();
-	_inputWeights /= sqrtf(_inputCount);
+	//_inputWeights /= sqrtf(_inputCount);
 
 	_inputBiases = InBias_t(_neuronCount);
-	for (unsigned int i = 0; i < _inputBiases.GetSize(); ++i)
-		_inputBiases[i] = stm::normaldistr_randomf();
-	_inputBiases /= sqrtf(_inputCount);
+	//for (unsigned int i = 0; i < _inputBiases.GetSize(); ++i)
+	//	_inputBiases[i] = stm::normaldistr_randomf();
+	//_inputBiases /= sqrtf(_inputCount);
 
 	_layersWeights.reserve(_layerCount);
 	for (unsigned int j = 0; j < _layerCount; ++j)
@@ -83,23 +83,23 @@ void NN::InitializeNetwork()
 		_layersWeights.emplace_back(_neuronCount, _neuronCount);
 		for (unsigned int i = 0; i < _layersWeights[j].GetSize(); ++i)
 			_layersWeights[j][0][i] = stm::normaldistr_randomf();
-		_layersWeights[j] /= sqrtf(_neuronCount);
+		//_layersWeights[j] /= sqrtf(_neuronCount);
 	}
 
 	_layersBiases = HidBiases_t(_layerCount, _neuronCount);
 	for (unsigned int i = 0; i < _layersBiases.GetSize(); ++i)
 		_layersBiases[0][i] = stm::normaldistr_randomf();
-	_layersBiases /= sqrtf(_neuronCount);
+	//_layersBiases /= sqrtf(_neuronCount);
 
 	_outputWeights = OutWeight_t(_outputCount, _neuronCount);
 	for (unsigned int i = 0; i < _outputWeights.GetSize(); ++i)
 		_outputWeights[0][i] = stm::normaldistr_randomf();
-	_outputWeights /= sqrtf(_neuronCount);
+	//_outputWeights /= sqrtf(_neuronCount);
 
 	_outputBiases = OutBias_t(_outputCount);
 	for (unsigned int i = 0; i < _outputBiases.GetSize(); ++i)
 		_outputBiases[i] = stm::normaldistr_randomf();
-	_outputWeights /= sqrtf(_neuronCount);
+	//_outputWeights /= sqrtf(_neuronCount);
 
 	_inputWeightsAdjust = InWeight_t(_neuronCount, _inputCount);
 	_inputBiasesAdjust = InBias_t(_neuronCount);
@@ -109,6 +109,8 @@ void NN::InitializeNetwork()
 	_layersBiasesAdjust = HidBiases_t(_layerCount, _neuronCount);
 	_outputWeightsAdjust = OutWeight_t(_outputCount, _neuronCount);
 	_outputBiasesAdjust = OutBias_t(_outputCount);
+
+	_resume = true;
 }
 
 std::pair<NN::OutData_t, NN::OutData_t> NN::TestSample(unsigned int id)
@@ -150,7 +152,7 @@ void NN::BackPropagate(const InData_t& input, const OutData_t& output)
 	stm::dynamic_matrix<float> aValues(_layerCount + 1, _neuronCount);
 	stm::dynamic_matrix<float> zValues(_layerCount + 1, _neuronCount);
 
-	stm::dynamic_vector<float> values = avx::multiply256(_inputWeights, input) + _inputBiases;
+	stm::dynamic_vector<float> values = stm::avx::multiply256(_inputWeights, input) + _inputBiases;
 
 	for (unsigned int n = 0; n < _sampleBatch; ++n)
 		aValues.SetRowVector(0, values);
@@ -229,14 +231,17 @@ void NN::AdjustNetwork()
 
 void NN::StartTraining()
 {
-	InitializeNetwork();
+	if (!_resume)
+		InitializeNetwork();
 	for (unsigned int i = 0; i < _epochCount; ++i)
 	{
 		for (unsigned int j = 0; j < _trainingSampleCount / _sampleBatch; ++j)
 		{
-			std::vector<unsigned int> batch = ShuffleData();
 			if (_multiBatch)
+			{
+				std::vector<unsigned int> batch = ShuffleData();
 				BackPropagateBatch(_inputData->GetSampleBatch(batch), _outputData->GetSampleBatch(batch));
+			}
 			else
 				BackPropagate(_inputData->GetSample(j), _outputData->GetSample(j));
 			AdjustNetwork();

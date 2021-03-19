@@ -3,15 +3,17 @@
 #include "my_network.h"
 #include "stm/aligned_matrix.h"
 #include "stm/utilities.h"
-#include "avxMath.h"
+#include "stm/avx_math.h"
+
 
 int main()
 {
 	//neural();
 	//Test();
-	//neuralstatic();
 	//TestStatic();
 	//reverseneural();
+
+	neuralstatic();
 
 	const unsigned int size = 100;
 	stm::matrix<float, size, size> mat1(13.2f), mat2(-0.29f);
