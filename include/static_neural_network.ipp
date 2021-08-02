@@ -205,20 +205,20 @@ void SNN<TEMPLATE_ARGS>::BackPropagate(const InData_t& input, const OutData_t& o
 	//stm::vector<float, _NEURONS> vec = stm::multiply(_inputWeights, input) + _inputBiases;
 
 	for (unsigned int n = 0; n < _sampleBatch; ++n)
-		aValues.SetRowVector(0, vec);
+		aValues.SetRowVector(0, vec); // Does this do something?
 	vec.ApplyToVector(Sigmoid);
 	for (unsigned int n = 0; n < _sampleBatch; ++n)
-		zValues.SetRowVector(0, vec);
+		zValues.SetRowVector(0, vec); // ??
 
 
 	for (unsigned int i = 0; i < _LAYERS; ++i)
 	{
 		vec = stm::multiply(_layersWeights[i], vec) + _layersBiases.GetRowVector(i);
 		for (unsigned int n = 0; n < _sampleBatch; ++n)
-			aValues.SetRowVector(i + 1, vec);
+			aValues.SetRowVector(i + 1, vec); // ???
 		vec.ApplyToVector(Sigmoid);
 		for (unsigned int n = 0; n < _sampleBatch; ++n)
-			zValues.SetRowVector(i + 1, vec);
+			zValues.SetRowVector(i + 1, vec); // ???
 	}
 
 	OutData_t out = stm::multiply(_outputWeights, vec) + _outputBiases;
@@ -256,7 +256,7 @@ static std::mutex adjustLock;
 
 TEMPLATE_DEFINE
 void SNN<TEMPLATE_ARGS>::SaveAdjustments(const InWeight_t& inputWeightsAdjust,
-										 const InBias_t inputBiasesAdjust,
+										 const InBias_t& inputBiasesAdjust,
 										 const HidWeights_t& layersWeightsAdjust,
 										 const HidBiases_t& layersBiasesAdjust,
 										 const OutWeight_t& outputWeightsAdjust,
