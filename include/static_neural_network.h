@@ -54,7 +54,7 @@ private:
 	void BackPropagate(const InData_t& input, const OutData_t& output);
 	void BackPropagateBatch(const stm::dynamic_matrix<float>& input, const stm::dynamic_matrix<float>& output);
 	void SaveAdjustments(const InWeight_t& inputWeightsAdjust,
-						 const InBias_t inputBiasesAdjust, 
+						 const InBias_t& inputBiasesAdjust, 
 						 const HidWeights_t& layersWeightsAdjust,
 						 const HidBiases_t& layersBiasesAdjust,
 						 const OutWeight_t& outputWeightsAdjust,
